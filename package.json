@@ -1,0 +1,8 @@
+{
+  "name": "panzerkraft",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Panzerkraft module",
+  "main": "dist/index.js"
+}
