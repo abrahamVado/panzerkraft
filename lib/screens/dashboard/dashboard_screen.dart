@@ -64,77 +64,105 @@ class DashboardScreen extends ConsumerWidget {
                   children: [
                     _DashboardGreetingBanner(riderName: rider.name, metrics: metrics),
                     const SizedBox(height: 16),
-                    GridView.count(
-                      crossAxisCount: 3,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      childAspectRatio: 0.9,
-                      children: [
-                        _DashboardQuickStat(
-                          icon: Icons.account_balance,
-                          title: 'Banco',
-                          value: metrics.bankName,
-                          description: 'Gestiona tus datos bancarios y cobros.',
-                          background: colorScheme.primaryContainer,
-                          foreground: colorScheme.onPrimaryContainer,
-                          actionLabel: 'Actualizar',
-                          onAction: () => context.pushNamed(AppRoute.bankInfo.name),
-                        ),
-                        _DashboardQuickStat(
-                          icon: Icons.credit_card,
-                          title: 'Cuenta',
-                          value: rider.email,
-                          description: 'Edita tu perfil y datos de contacto.',
-                          background: colorScheme.secondaryContainer,
-                          foreground: colorScheme.onSecondaryContainer,
-                          actionLabel: 'Editar',
-                          onAction: () => context.pushNamed(AppRoute.riderProfile.name),
-                        ),
-                        _DashboardQuickStat(
-                          icon: Icons.star_rate,
-                          title: 'Evaluación',
-                          value: '${metrics.evaluationScore} / 5',
-                          description: 'Revisa el promedio de satisfacción de tus pasajeros.',
-                          background: colorScheme.tertiaryContainer,
-                          foreground: colorScheme.onTertiaryContainer,
-                          actionLabel: 'Ver opiniones',
-                          onAction: () => _showComingSoon(context, 'las opiniones detalladas'),
-                        ),
-                        _DashboardQuickStat(
-                          icon: Icons.event_available,
-                          title: 'Reserva',
-                          value: 'Anticipa viajes',
-                          description: 'Registra traslados programados para tus clientes frecuentes.',
-                          background: colorScheme.surfaceVariant,
-                          foreground: colorScheme.onSurfaceVariant,
-                          actionLabel: 'Crear',
-                          onAction: () => context.pushNamed(AppRoute.reservation.name),
-                        ),
-                        _DashboardQuickStat(
-                          icon: Icons.warning_amber_outlined,
-                          title: 'Panic Button',
-                          value: panicEnabled ? 'Listo para usar' : 'Sin viaje aceptado',
-                          description: 'Activa asistencia inmediata cuando tu seguridad esté en riesgo.',
-                          background: colorScheme.errorContainer,
-                          foreground: colorScheme.onErrorContainer,
-                          actionLabel: 'Alerta',
-                          isEnabled: panicEnabled,
-                          onAction: () =>
-                              context.pushNamed(AppRoute.panicButton.name, extra: currentTrip),
-                        ),
-                        _DashboardQuickStat(
-                          icon: Icons.support_agent,
-                          title: 'Contáctanos',
-                          value: 'Soporte 24/7',
-                          description: 'Habla con nuestro equipo para resolver dudas y reportes.',
-                          background: colorScheme.inversePrimary,
-                          foreground: colorScheme.onPrimary,
-                          actionLabel: 'Abrir',
-                          onAction: () => context.pushNamed(AppRoute.contact.name),
-                        ),
-                      ],
+                    //4.- LayoutBuilder ajusta las tarjetas para garantizar una altura mínima.
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        const spacing = 12.0;
+                        const minHeight = 240.0;
+                        final maxWidth = constraints.maxWidth;
+                        final crossAxisCount = maxWidth >= 900
+                            ? 3
+                            : maxWidth >= 600
+                                ? 2
+                                : 1;
+                        final totalSpacing = spacing * (crossAxisCount - 1);
+                        final clampedWidth =
+                            (maxWidth - totalSpacing).clamp(160.0, double.infinity)
+                                as double;
+                        final itemWidth = clampedWidth / crossAxisCount;
+                        final aspectRatio = itemWidth / minHeight;
+                        final quickStats = [
+                          _DashboardQuickStat(
+                            icon: Icons.account_balance,
+                            title: 'Banco',
+                            value: metrics.bankName,
+                            description: 'Gestiona tus datos bancarios y cobros.',
+                            background: colorScheme.primaryContainer,
+                            foreground: colorScheme.onPrimaryContainer,
+                            actionLabel: 'Actualizar',
+                            onAction: () => context.pushNamed(AppRoute.bankInfo.name),
+                          ),
+                          _DashboardQuickStat(
+                            icon: Icons.credit_card,
+                            title: 'Cuenta',
+                            value: rider.email,
+                            description: 'Edita tu perfil y datos de contacto.',
+                            background: colorScheme.secondaryContainer,
+                            foreground: colorScheme.onSecondaryContainer,
+                            actionLabel: 'Editar',
+                            onAction: () => context.pushNamed(AppRoute.riderProfile.name),
+                          ),
+                          _DashboardQuickStat(
+                            icon: Icons.star_rate,
+                            title: 'Evaluación',
+                            value: '${metrics.evaluationScore} / 5',
+                            description:
+                                'Revisa el promedio de satisfacción de tus pasajeros.',
+                            background: colorScheme.tertiaryContainer,
+                            foreground: colorScheme.onTertiaryContainer,
+                            actionLabel: 'Ver opiniones',
+                            onAction: () =>
+                                _showComingSoon(context, 'las opiniones detalladas'),
+                          ),
+                          _DashboardQuickStat(
+                            icon: Icons.event_available,
+                            title: 'Reserva',
+                            value: 'Anticipa viajes',
+                            description:
+                                'Registra traslados programados para tus clientes frecuentes.',
+                            background: colorScheme.surfaceVariant,
+                            foreground: colorScheme.onSurfaceVariant,
+                            actionLabel: 'Crear',
+                            onAction: () => context.pushNamed(AppRoute.reservation.name),
+                          ),
+                          _DashboardQuickStat(
+                            icon: Icons.warning_amber_outlined,
+                            title: 'Panic Button',
+                            value:
+                                panicEnabled ? 'Listo para usar' : 'Sin viaje aceptado',
+                            description:
+                                'Activa asistencia inmediata cuando tu seguridad esté en riesgo.',
+                            background: colorScheme.errorContainer,
+                            foreground: colorScheme.onErrorContainer,
+                            actionLabel: 'Alerta',
+                            isEnabled: panicEnabled,
+                            onAction: () => context.pushNamed(
+                              AppRoute.panicButton.name,
+                              extra: currentTrip,
+                            ),
+                          ),
+                          _DashboardQuickStat(
+                            icon: Icons.support_agent,
+                            title: 'Contáctanos',
+                            value: 'Soporte 24/7',
+                            description:
+                                'Habla con nuestro equipo para resolver dudas y reportes.',
+                            background: colorScheme.inversePrimary,
+                            foreground: colorScheme.onPrimary,
+                            actionLabel: 'Abrir',
+                            onAction: () => context.pushNamed(AppRoute.contact.name),
+                          ),
+                        ];
+                        return GridView.count(
+                          crossAxisCount: crossAxisCount,
+                          crossAxisSpacing: spacing,
+                          mainAxisSpacing: spacing,
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          childAspectRatio: aspectRatio,
+                          children: quickStats,
+                        );
+                      },
                     ),
                     const SizedBox(height: 20),
                     _DashboardSection(

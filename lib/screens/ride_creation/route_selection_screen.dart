@@ -212,12 +212,14 @@ class _RouteSelectionScreenState extends ConsumerState<RouteSelectionScreen> {
       final route = state.routes[i];
       final points = DirectionsService.decodePolyline(route.polyline);
       if (points.isEmpty) continue;
+      final isSelected = route == state.selectedRoute; //12.1.- La ruta activa recibe estilo destacado.
       polylines.add(
         Polyline(
           polylineId: PolylineId('route_$i'),
           points: points,
-          color: route == state.selectedRoute ? Colors.blueAccent : Colors.grey,
-          width: route == state.selectedRoute ? 6 : 4,
+          color: isSelected ? Colors.blueAccent : Colors.grey,
+          width: isSelected ? 6 : 4,
+          zIndex: isSelected ? 1 : 0,
         ),
       );
     }
