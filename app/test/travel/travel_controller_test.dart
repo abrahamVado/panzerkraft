@@ -106,4 +106,41 @@ void main() {
     expect(controller.statusLabel,
         'No active rides. Ready for dispatch.');
   });
+
+  test('cancel auction clears bids and restores planning state', () {
+    //1.- Prepare a controller with a seeded request so the auction can run.
+    final controller = TravelController(
+      locationService: _FakeLocationService(),
+      auctionManager: RideAuctionManager(random: Random(4)),
+    );
+    final request = RideRequest(
+      start: PlaceOption(
+        title: 'Origin',
+        subtitle: 'Start point',
+        location: const LatLng(19.4, -99.1),
+      ),
+      end: PlaceOption(
+        title: 'Destination',
+        subtitle: 'End point',
+        location: const LatLng(19.42, -99.2),
+      ),
+      rideForSelf: true,
+      distanceInKm: 12,
+      routePolyline: const [LatLng(19.4, -99.1), LatLng(19.42, -99.2)],
+    );
+    //2.- Move into the auction phase to populate bids and start the timer.
+    controller.updateRide(request);
+    controller.startAuction();
+    expect(controller.phase, TravelPhase.auction);
+    expect(controller.bids, isNotEmpty);
+    expect(controller.isAuctionRunning, isTrue);
+    //3.- Cancel the auction and verify the controller retains the draft ride without bids.
+    controller.cancelAuction();
+    expect(controller.phase, TravelPhase.planning);
+    expect(controller.bids, isEmpty);
+    expect(controller.selectedBid, isNull);
+    expect(controller.isAuctionRunning, isFalse);
+    expect(controller.timeLeft.inSeconds, 0);
+    expect(controller.request, isNotNull);
+  });
 }
