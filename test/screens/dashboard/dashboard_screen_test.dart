@@ -81,11 +81,16 @@ void main() {
     expect(find.text('Anticipa viajes'), findsOneWidget);
     expect(find.text('Soporte 24/7'), findsOneWidget);
 
-    //5.- Confirmamos que el CTA principal permanezca habilitado para iniciar un nuevo viaje.
+    //5.- Validamos que la cuadrícula muestre dos columnas activas para las estadísticas rápidas.
+    final grid = tester.widget<GridView>(find.byType(GridView).first);
+    final delegate = grid.gridDelegate as SliverGridDelegateWithFixedCrossAxisCount;
+    expect(delegate.crossAxisCount, 2);
+
+    //6.- Confirmamos que el CTA principal permanezca habilitado para iniciar un nuevo viaje.
     final button = tester.widget<FilledButton>(find.byKey(dashboardCreateRideButtonKey));
     expect(button.onPressed, isNotNull);
 
-    //6.- Validamos que el botón de alerta esté disponible cuando existe un viaje aceptado.
+    //7.- Validamos que el botón de alerta esté disponible cuando existe un viaje aceptado.
     final panicButton = tester.widget<FilledButton>(
       find.widgetWithText(FilledButton, 'Alerta').first,
     );
@@ -118,7 +123,7 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    //7.- Corroboramos que el resumen refleje la indisponibilidad del botón.
+    //8.- Corroboramos que el resumen refleje la indisponibilidad del botón.
     expect(find.text('Sin viaje aceptado'), findsOneWidget);
     final panicButton = tester.widget<FilledButton>(
       find.widgetWithText(FilledButton, 'Alerta').first,
