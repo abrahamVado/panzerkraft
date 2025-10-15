@@ -1,6 +1,6 @@
 plugins {
     id "com.android.application"
-    id "kotlin-android"
+    id "org.jetbrains.kotlin.android"
     id "dev.flutter.flutter-gradle-plugin"
 }
 
@@ -28,14 +28,14 @@ android {
     ndkVersion flutter.ndkVersion
 
     compileOptions {
-        //1.- Use the Java 8 bytecode level expected by the Android Gradle Plugin 7 toolchain.
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        //1.- Target Java 17 bytecode so the app matches the requirements of the Android Gradle Plugin 8 toolchain.
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        //2.- Keep Kotlin bytecode aligned with the Java 8 target level so Gradle can compile the project without toolchain upgrades.
-        jvmTarget = '1.8'
+        //2.- Keep Kotlin bytecode on JVM 17 to stay in sync with the Java toolchain upgrade.
+        jvmTarget = '17'
     }
 
     sourceSets {

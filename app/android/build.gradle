@@ -1,18 +1,12 @@
-buildscript {
-    //1.- Align Kotlin tooling with the Android Gradle Plugin 7 APIs that remain compatible with the Flutter tooling in this repo.
-    ext.kotlin_version = '1.9.22'
-    repositories {
-        google()
-        mavenCentral()
-    }
-
-    dependencies {
-        classpath 'com.android.tools.build:gradle:7.4.2'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-    }
+plugins {
+    //1.- Provide the Android Gradle plugin release that supports Gradle 8.6 and Java 21 toolchains.
+    id "com.android.application" version "8.3.2" apply false
+    //2.- Provide the Kotlin Android plugin aligned with the selected Android Gradle plugin.
+    id "org.jetbrains.kotlin.android" version "1.9.22" apply false
 }
 
 allprojects {
+    //3.- Ensure every module can resolve dependencies from the standard Android repositories.
     repositories {
         google()
         mavenCentral()
@@ -21,12 +15,15 @@ allprojects {
 
 rootProject.buildDir = '../build'
 subprojects {
+    //4.- Relocate each module's build output into the shared build directory Flutter expects.
     project.buildDir = "${rootProject.buildDir}/${project.name}"
 }
 subprojects {
+    //5.- Evaluate the Android app module before dependent modules so Flutter task wiring works.
     project.evaluationDependsOn(':app')
 }
 
 tasks.register("clean", Delete) {
+    //6.- Retain the clean task so `flutter clean` still removes the aggregated build directory.
     delete rootProject.buildDir
 }
