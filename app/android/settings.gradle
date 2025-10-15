@@ -18,8 +18,8 @@ pluginManagement {
 
     plugins {
         id "dev.flutter.flutter-gradle-plugin" version "1.0.0" apply false
-        //1.- Align the Kotlin Android plugin with Android Gradle Plugin 8.3+ to restore BaseVariant compatibility.
-        id "org.jetbrains.kotlin.android" version "1.9.23" apply false
+        //1.- Move to Kotlin 2.0.0 so the Android plugin no longer depends on the removed BaseVariant APIs from AGP 8+.
+        id "org.jetbrains.kotlin.android" version "2.0.0" apply false
     }
 }
 
