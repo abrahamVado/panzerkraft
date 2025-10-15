@@ -17,6 +17,7 @@ const routeSelectionDestinationFieldKey = Key(
 );
 const routeSelectionStartButtonKey = Key('route_selection_start_button');
 const routeSelectionMapKey = Key('route_selection_map');
+const routeSelectionCalculateButtonKey = Key('route_selection_calculate_button');
 
 //3.1.- _ActiveRouteField identifica el campo actualmente interactivo para rellenar con el mapa.
 enum _ActiveRouteField { origin, destination }
@@ -159,6 +160,11 @@ class _RouteSelectionScreenState extends ConsumerState<RouteSelectionScreen> {
         FocusScope.of(context).unfocus();
         break;
     }
+  }
+
+  Future<void> _calculateRoutes() async {
+    //9.2.- _calculateRoutes delega al controlador para generar polilíneas bajo demanda.
+    await ref.read(routeSelectionControllerProvider.notifier).calculateRoutes();
   }
 
   void _startAuction() {
@@ -368,6 +374,17 @@ class _RouteSelectionScreenState extends ConsumerState<RouteSelectionScreen> {
                               origin: state.origin,
                               destination: state.destination,
                               summaryLabel: _formatRouteMetadata(selectedRoute),
+                            ),
+                          ),
+                        if (state.origin != null && state.destination != null)
+                          Positioned(
+                            right: 16,
+                            bottom: 16,
+                            child: FloatingActionButton.extended(
+                              key: routeSelectionCalculateButtonKey,
+                              onPressed:
+                                  state.isLoadingRoutes ? null : () => _calculateRoutes(),
+                              label: const Text('Calculate distance and minimum bid'),
                             ),
                           ),
                       ],

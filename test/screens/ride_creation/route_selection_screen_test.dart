@@ -160,6 +160,13 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
 
+    final calculateButton = find.byKey(routeSelectionCalculateButtonKey);
+    expect(calculateButton, findsOneWidget);
+
+    await tester.tap(calculateButton);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+
     expect(find.byKey(const Key('route_option_0')), findsOneWidget);
     expect(find.byKey(const Key('route_option_1')), findsOneWidget);
     expect(markersLog.value.length, 2);
@@ -197,6 +204,13 @@ void main() {
         find.byKey(routeSelectionDestinationFieldKey), 'Beta');
     await tester.pump(const Duration(milliseconds: 400));
     await tester.tap(find.text('Beta Station'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+
+    final calculateButton = find.byKey(routeSelectionCalculateButtonKey);
+    expect(calculateButton, findsOneWidget);
+
+    await tester.tap(calculateButton);
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
 
