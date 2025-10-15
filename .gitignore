@@ -1,0 +1,66 @@
+# --- Dart / Flutter ---
+.dart_tool/
+.packages
+.flutter-plugins
+.flutter-plugins-dependencies
+.melos_tool/
+.flutter-versions
+
+# Build outputs
+build/
+coverage/
+.dart_tool/**
+
+# Platform builds
+android/.gradle/
+android/.cxx/
+android/local.properties
+android/**/captures/
+android/**/build/
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework/
+ios/Flutter/Flutter.podspec
+ios/Flutter/App.framework
+ios/**/GeneratedPluginRegistrant.*
+macos/Flutter/ephemeral/
+macos/**/Flutter/GeneratedPluginRegistrant.*
+macos/**/Pods/
+linux/**/flutter/ephemeral/
+windows/**/flutter/ephemeral/
+
+# Web
+web/.dart_tool/
+web/.firebase/
+web/build/
+
+# IDEs
+.idea/
+.vscode/
+*.iml
+
+# OS noise
+.DS_Store
+Thumbs.db
+
+# Secrets / keys
+*.jks
+*.keystore
+*.p12
+*.pem
+*.key
+*.cer
+*.crt
+*.der
+*.pfx
+**/keystore.properties
+**/key.properties
+*.env
+.env*
+.secret*
+.secrets/
+
+# Logs
+*.log
+
+# NOTE: Keep pubspec.lock for apps (do not ignore).
