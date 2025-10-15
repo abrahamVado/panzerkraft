@@ -130,5 +130,44 @@ void main() {
       expect(controller.state.routes, containsAll([scenicRoute, fastRoute]));
       expect(controller.state.selectedRoute, fastRoute);
     });
+
+    //7.- useHistoricCenterToTeotihuacanDemoRoute carga el ejemplo público y dispara el cálculo automático.
+    test('demo route populates preset waypoints and fetches directions', () async {
+      final demoRoute = const RideRouteOption(
+        id: 'demo-route',
+        polyline: 'xyz',
+        distanceMeters: 50000,
+        durationSeconds: 3600,
+        summary: 'Mexico 132D',
+      );
+      final directions = _FakeDirectionsService(routesToReturn: [demoRoute]);
+      final controller = RouteSelectionController(
+        places: _FakePlaceAutocompleteService(),
+        directions: directions,
+      );
+
+      await controller.useHistoricCenterToTeotihuacanDemoRoute();
+
+      expect(
+        controller.state.origin?.placeId,
+        'demo_origin_mexico_city_centro',
+      );
+      expect(
+        controller.state.destination?.placeId,
+        'demo_destination_teotihuacan_site',
+      );
+      expect(controller.state.routes, [demoRoute]);
+      expect(controller.state.selectedRoute, demoRoute);
+      expect(controller.state.isLoadingRoutes, isFalse);
+      expect(controller.state.errorMessage, isNull);
+      expect(
+        directions.lastOrigin,
+        const LatLng(19.4326, -99.1332),
+      );
+      expect(
+        directions.lastDestination,
+        const LatLng(19.7008, -98.8456),
+      );
+    });
   });
 }
