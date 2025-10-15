@@ -31,15 +31,15 @@ android {
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
-    //7.- Alinea la compatibilidad de Java con la configuración importada.
+    //7.- Alinea la compatibilidad de Java con la configuración importada y los requisitos de AGP 8.5.
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
-    //8.- Configura Kotlin para emitir bytecode compatible con Java 11.
+    //8.- Configura Kotlin para emitir bytecode compatible con Java 17.
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
+        jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
     defaultConfig {

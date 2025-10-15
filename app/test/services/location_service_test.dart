@@ -111,4 +111,31 @@ void main() {
     expect(location.latitude, position.latitude);
     expect(location.longitude, position.longitude);
   });
+
+  test('skips extra permission requests when already authorized', () async {
+    //1.- Reuse the fake geolocator with an initial granted permission.
+    final position = Position(
+      latitude: 48.8566,
+      longitude: 2.3522,
+      //1.1.- Mantén los valores requeridos por Geolocator para que la simulación sea consistente.
+      timestamp: DateTime.fromMillisecondsSinceEpoch(0),
+      accuracy: 3,
+      altitude: 0,
+      altitudeAccuracy: 1,
+      heading: 0,
+      headingAccuracy: 1,
+      speed: 0,
+      speedAccuracy: 1,
+    );
+    final service = LocationService(
+      geolocator: _FakeGeolocator(
+        initialPermission: LocationPermission.always,
+        position: position,
+      ),
+    );
+    //2.- Confirma que la ubicación devuelta corresponde al mock y no requiere permisos extra.
+    final location = await service.getCurrentLocation();
+    expect(location.latitude, position.latitude);
+    expect(location.longitude, position.longitude);
+  });
 }

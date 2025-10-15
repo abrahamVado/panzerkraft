@@ -22,10 +22,10 @@ pluginManagement {
     plugins {
         //5.1.- Loader del plugin de Flutter que registra las tareas base.
         id("dev.flutter.flutter-gradle-plugin") version "1.0.0" apply false
-        //5.2.- Plugin de Android con la versión 8.9.1 adoptada por la configuración clonada.
-        id("com.android.application") version "8.9.1" apply false
-        //5.3.- Plugin de Kotlin Android en la versión 1.9.24 compatible con el AGP 8.9.1.
-        id("org.jetbrains.kotlin.android") version "1.9.24" apply false
+        //5.2.- Plugin de Android actualizado a la versión 8.5.2 para recuperar compatibilidad con Kotlin.
+        id("com.android.application") version "8.5.2" apply false
+        //5.3.- Plugin de Kotlin Android alineado a la versión 2.0.20 que soporta el nuevo AGP.
+        id("org.jetbrains.kotlin.android") version "2.0.20" apply false
     }
 }
 
