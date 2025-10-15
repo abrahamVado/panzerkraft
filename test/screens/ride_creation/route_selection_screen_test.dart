@@ -8,6 +8,7 @@ import 'package:ubberapp/providers/ride_creation_providers.dart';
 import 'package:ubberapp/screens/ride_creation/route_selection_screen.dart';
 import 'package:ubberapp/services/location/directions_service.dart';
 import 'package:ubberapp/services/location/place_autocomplete_service.dart';
+import 'package:ubberapp/services/location/ride_location_service.dart';
 
 //1.- FakePlaceAutocompleteService devuelve datos determinísticos sin tocar la red real.
 class FakePlaceAutocompleteService extends PlaceAutocompleteService {
@@ -58,11 +59,16 @@ class FakeDirectionsService extends DirectionsService {
           apiKey: 'fake',
         );
 
+  LatLng? lastOrigin;
+  LatLng? lastDestination;
+
   @override
   Future<List<RideRouteOption>> routesBetween(
     LatLng origin,
     LatLng destination,
   ) async {
+    lastOrigin = origin;
+    lastDestination = destination;
     return [
       const RideRouteOption(
         id: 'primary',
@@ -82,9 +88,26 @@ class FakeDirectionsService extends DirectionsService {
   }
 }
 
+//3.- FakeRideLocationService evita dependencias de geolocalización durante las pruebas.
+class FakeRideLocationService extends RideLocationService {
+  FakeRideLocationService({RideLocationResult? result})
+      : _result = result ??
+            const RideLocationResult(
+              status: RideLocationStatus.success,
+              position: LatLng(19.05, -99.05),
+            ),
+        super();
+
+  final RideLocationResult _result;
+
+  @override
+  Future<RideLocationResult> fetchCurrentLocation() async => _result;
+}
+
 ProviderContainer _createContainer({
   PlaceAutocompleteService? placeService,
   DirectionsService? directionsService,
+  RideLocationService? locationService,
 }) {
   return ProviderContainer(overrides: [
     placeAutocompleteServiceProvider.overrideWithValue(
@@ -92,6 +115,9 @@ ProviderContainer _createContainer({
     ),
     directionsServiceProvider.overrideWithValue(
       directionsService ?? FakeDirectionsService(),
+    ),
+    rideLocationServiceProvider.overrideWithValue(
+      locationService ?? FakeRideLocationService(),
     ),
   ]);
 }
@@ -221,6 +247,74 @@ void main() {
     );
     expect(selectedPolyline.color, Colors.blueAccent);
     expect(selectedPolyline.zIndex, 1);
+  });
+
+  testWidgets('demo button fills origin, destination and triggers directions',
+      (tester) async {
+    final directions = FakeDirectionsService();
+    final container = _createContainer(directionsService: directions);
+
+    await tester.pumpWidget(_buildTestableScreen(container: container));
+
+    await tester.tap(find.byKey(routeSelectionUseDemoButtonKey));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+
+    expect(find.text('Mexico City Historic Center'), findsOneWidget);
+    expect(find.text('Teotihuacán Archaeological Site'), findsOneWidget);
+    expect(
+      directions.lastOrigin,
+      const LatLng(19.4326, -99.1332),
+    );
+    expect(
+      directions.lastDestination,
+      const LatLng(19.7008, -98.8456),
+    );
+    expect(find.byKey(const Key('route_option_0')), findsOneWidget);
+    expect(find.byKey(const Key('route_option_1')), findsOneWidget);
+  });
+
+  testWidgets('calculate button uses current location when origin missing',
+      (tester) async {
+    final locationResult = const RideLocationResult(
+      status: RideLocationStatus.success,
+      position: LatLng(19.25, -99.25),
+    );
+    final locationService = FakeRideLocationService(result: locationResult);
+    final directions = FakeDirectionsService();
+    final markersLog = ValueNotifier<Set<Marker>>({});
+    final container = _createContainer(
+      directionsService: directions,
+      locationService: locationService,
+    );
+
+    await tester.pumpWidget(
+      _buildTestableScreen(
+        container: container,
+        markersLog: markersLog,
+      ),
+    );
+
+    await tester.enterText(
+      find.byKey(routeSelectionDestinationFieldKey),
+      'Beta',
+    );
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.tap(find.text('Beta Station'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+
+    await tester.tap(find.byKey(routeSelectionCalculateButtonKey));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+
+    expect(find.textContaining('Origen seleccionado'), findsOneWidget);
+    expect(directions.lastOrigin, locationResult.position);
+    expect(directions.lastDestination, const LatLng(19.1, -99.1));
+    expect(
+      markersLog.value.any((marker) => marker.markerId.value == 'origin'),
+      isTrue,
+    );
   });
 
   testWidgets('tocar el mapa llena el origen y el destino según el foco',

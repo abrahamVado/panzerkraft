@@ -9,6 +9,7 @@ import '../../models/ride_route_models.dart';
 import '../../providers/ride_creation_providers.dart';
 import '../../router/app_router.dart';
 import '../../services/location/directions_service.dart';
+import '../../services/location/ride_location_service.dart';
 
 //1.- Claves globales para facilitar la interacción en pruebas automatizadas.
 const routeSelectionOriginFieldKey = Key('route_selection_origin_field');
@@ -18,6 +19,7 @@ const routeSelectionDestinationFieldKey = Key(
 const routeSelectionStartButtonKey = Key('route_selection_start_button');
 const routeSelectionMapKey = Key('route_selection_map');
 const routeSelectionCalculateButtonKey = Key('route_selection_calculate_button');
+const routeSelectionUseDemoButtonKey = Key('route_selection_use_demo_button');
 
 //3.1.- _ActiveRouteField identifica el campo actualmente interactivo para rellenar con el mapa.
 enum _ActiveRouteField { origin, destination }
@@ -50,6 +52,9 @@ class _RouteSelectionScreenState extends ConsumerState<RouteSelectionScreen> {
   Timer? _originDebounce;
   Timer? _destinationDebounce;
   _ActiveRouteField _activeField = _ActiveRouteField.origin;
+  GoogleMapController? _mapController;
+  LatLng? _currentLocation;
+  bool _isResolvingLocation = false;
 
   @override
   void initState() {
@@ -96,6 +101,10 @@ class _RouteSelectionScreenState extends ConsumerState<RouteSelectionScreen> {
     _destinationFocusNode.removeListener(_onDestinationFocusChanged);
     _originFocusNode.dispose();
     _destinationFocusNode.dispose();
+    final controller = _mapController;
+    if (controller != null) {
+      unawaited(controller.dispose());
+    }
     _subscription.close();
     super.dispose();
   }
@@ -165,6 +174,77 @@ class _RouteSelectionScreenState extends ConsumerState<RouteSelectionScreen> {
   Future<void> _calculateRoutes() async {
     //9.2.- _calculateRoutes delega al controlador para generar polilíneas bajo demanda.
     await ref.read(routeSelectionControllerProvider.notifier).calculateRoutes();
+  }
+
+  Future<void> _useDemoRoute() async {
+    //9.3.- _useDemoRoute aplica el ejemplo público del Directions API para rellenar ambos campos.
+    FocusScope.of(context).unfocus();
+    await ref
+        .read(routeSelectionControllerProvider.notifier)
+        .useHistoricCenterToTeotihuacanDemoRoute();
+  }
+
+  Future<void> _resolveLocationAndCalculate() async {
+    //9.4.- _resolveLocationAndCalculate obtiene la ubicación actual antes de lanzar el cálculo.
+    if (_isResolvingLocation) {
+      return;
+    }
+    setState(() => _isResolvingLocation = true);
+    FocusScope.of(context).unfocus();
+
+    final locationService = ref.read(rideLocationServiceProvider);
+    final locationResult = await locationService.fetchCurrentLocation();
+    if (!mounted) {
+      return;
+    }
+
+    if (locationResult.status == RideLocationStatus.success &&
+        locationResult.position != null) {
+      setState(() => _currentLocation = locationResult.position);
+      if (_mapController != null) {
+        await _mapController!.animateCamera(
+          CameraUpdate.newCameraPosition(
+            CameraPosition(target: _currentLocation!, zoom: 14),
+          ),
+        );
+      }
+      final notifier = ref.read(routeSelectionControllerProvider.notifier);
+      final state = ref.read(routeSelectionControllerProvider);
+      if (state.origin == null) {
+        await notifier.selectOriginFromMap(locationResult.position!);
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_mapLocationErrorMessage(locationResult.status)),
+        ),
+      );
+    }
+
+    final updatedState = ref.read(routeSelectionControllerProvider);
+    if (updatedState.origin == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Select an origin before calculating.')),
+      );
+      if (mounted) {
+        setState(() => _isResolvingLocation = false);
+      }
+      return;
+    }
+    if (updatedState.destination == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Select a destination before calculating.')),
+      );
+      if (mounted) {
+        setState(() => _isResolvingLocation = false);
+      }
+      return;
+    }
+
+    await _calculateRoutes();
+    if (mounted) {
+      setState(() => _isResolvingLocation = false);
+    }
   }
 
   void _startAuction() {
@@ -269,8 +349,18 @@ class _RouteSelectionScreenState extends ConsumerState<RouteSelectionScreen> {
         target: LatLng(19.432608, -99.133209),
         zoom: 11,
       ),
+      onMapCreated: (controller) {
+        //14.1.- Guardamos el controlador para animar la cámara tras resolver la ubicación.
+        _mapController ??= controller;
+        if (_currentLocation != null) {
+          controller.moveCamera(
+            CameraUpdate.newLatLngZoom(_currentLocation!, 14),
+          );
+        }
+      },
       markers: markers,
       polylines: polylines,
+      myLocationEnabled: _currentLocation != null,
       myLocationButtonEnabled: false,
       zoomControlsEnabled: false,
       onTap: _handleMapTap,
@@ -357,6 +447,18 @@ class _RouteSelectionScreenState extends ConsumerState<RouteSelectionScreen> {
                   'Consejo: toca el mapa mientras el campo deseado esté enfocado para rellenarlo automáticamente.',
                   style: theme.textTheme.bodySmall,
                 ),
+                const SizedBox(height: 12),
+                //15.1.- Ofrecemos un botón que carga el ejemplo con coordenadas reales.
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    key: routeSelectionUseDemoButtonKey,
+                    onPressed:
+                        state.isLoadingRoutes ? null : () => _useDemoRoute(),
+                    icon: const Icon(Icons.map_outlined),
+                    label: const Text('Use Mexico City → Teotihuacán example'),
+                  ),
+                ),
                 const SizedBox(height: 16),
                 Expanded(
                   child: ClipRRect(
@@ -376,17 +478,17 @@ class _RouteSelectionScreenState extends ConsumerState<RouteSelectionScreen> {
                               summaryLabel: _formatRouteMetadata(selectedRoute),
                             ),
                           ),
-                        if (state.origin != null && state.destination != null)
-                          Positioned(
-                            right: 16,
-                            bottom: 16,
-                            child: FloatingActionButton.extended(
-                              key: routeSelectionCalculateButtonKey,
-                              onPressed:
-                                  state.isLoadingRoutes ? null : () => _calculateRoutes(),
-                              label: const Text('Calculate distance and minimum bid'),
-                            ),
+                        Positioned(
+                          right: 16,
+                          bottom: 16,
+                          child: FloatingActionButton.extended(
+                            key: routeSelectionCalculateButtonKey,
+                            onPressed: state.isLoadingRoutes || _isResolvingLocation
+                                ? null
+                                : () => _resolveLocationAndCalculate(),
+                            label: const Text('Calculate distance and minimum bid'),
                           ),
+                        ),
                       ],
                     ),
                   ),
@@ -461,6 +563,20 @@ String _formatEta(int durationSeconds) {
   final hours = arrival.hour.toString().padLeft(2, '0');
   final minutes = arrival.minute.toString().padLeft(2, '0');
   return '$hours:$minutes';
+}
+
+String _mapLocationErrorMessage(RideLocationStatus status) {
+  //17.1.- _mapLocationErrorMessage traduce el fallo de GPS a un mensaje para SnackBar.
+  switch (status) {
+    case RideLocationStatus.permissionsDenied:
+      return 'We need location permissions to use your current position.';
+    case RideLocationStatus.servicesDisabled:
+      return 'Enable GPS services to use your current location.';
+    case RideLocationStatus.failure:
+      return 'We could not determine your current location.';
+    case RideLocationStatus.success:
+      return 'Location resolved successfully.';
+  }
 }
 
 //18.- _RouteSummaryBanner resume distancia y duración sobre el mapa para dos puntos.
