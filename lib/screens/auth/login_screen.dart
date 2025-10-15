@@ -78,7 +78,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Text(
-                    'Usa tu correo corporativo para ingresar al panel de riders.',
+                    'Acceso demo activo: escribe cualquier correo y contraseña para avanzar.',
                     style: theme.textTheme.bodyMedium,
                   ),
                   const SizedBox(height: 24),
