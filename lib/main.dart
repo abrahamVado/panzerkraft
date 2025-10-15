@@ -4,16 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shad;
 
 import 'config.dart';
-import 'providers/auth_providers.dart';
-import 'screens/auth/login_screen.dart';
-import 'screens/consult_screen.dart';
-import 'screens/dashboard/dashboard_screen.dart';
-import 'screens/map_report_screen.dart';
+import 'router/app_router.dart';
 import 'services/identity.dart';
 import 'theme/shad_theme_builder.dart';
 import 'theme/theme_controller.dart';
 import 'widgets/initialization_status_view.dart';
-import 'widgets/theme_mode_button.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -111,14 +106,14 @@ class _BootstrapAppState extends State<BootstrapApp> {
   }
 }
 
-class MictlanApp extends StatefulWidget {
+class MictlanApp extends ConsumerStatefulWidget {
   const MictlanApp({super.key});
 
   @override
-  State<MictlanApp> createState() => _MictlanAppState();
+  ConsumerState<MictlanApp> createState() => _MictlanAppState();
 }
 
-class _MictlanAppState extends State<MictlanApp> {
+class _MictlanAppState extends ConsumerState<MictlanApp> {
   late final ThemeController _controller;
 
   @override
@@ -138,6 +133,7 @@ class _MictlanAppState extends State<MictlanApp> {
   @override
   Widget build(BuildContext context) {
     //3.- build envuelve la app con ThemeScope y reconstruye ante cambios de modo.
+    final router = ref.watch(appRouterProvider);
     return ThemeScope(
       controller: _controller,
       child: AnimatedBuilder(
@@ -153,74 +149,16 @@ class _MictlanAppState extends State<MictlanApp> {
           );
           return shad.Theme(
             data: shadTheme,
-            child: MaterialApp(
+            child: MaterialApp.router(
               title: 'Mictlan Client',
               themeMode: _controller.mode,
               theme: ThemeData(colorScheme: colorScheme, useMaterial3: true),
               darkTheme: ThemeData(colorScheme: darkColorScheme, useMaterial3: true),
-              home: const AuthGate(),
+              //5.- routerConfig conecta MaterialApp con la instancia global de GoRouter.
+              routerConfig: router,
             ),
           );
         },
-      ),
-    );
-  }
-}
-
-//1.- AuthGate decide si mostrar el login o el flujo posterior a la autenticación.
-class AuthGate extends ConsumerWidget {
-  const AuthGate({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    //2.- build observa el estado del rider autenticado a través de Riverpod.
-    final rider = ref.watch(signedInRiderProvider);
-    if (rider == null) {
-      //3.- Sin sesión vigente devolvemos la pantalla de ingreso.
-      return const LoginScreen();
-    }
-    //4.- Con sesión activa presentamos la experiencia original.
-    return const HomeScreen();
-  }
-}
-
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  int index = 0;
-
-  final pages = const [
-    DashboardScreen(),
-    MapReportScreen(),
-    ConsultScreen(),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    //1.- build arma la estructura principal con AppBar, navegación y contenido dinámico.
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Mictlan Client'),
-        actions: const [
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 12),
-            child: ThemeModeButton(),
-          ),
-        ],
-      ),
-      body: pages[index],
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: index,
-        onDestinationSelected: (i) => setState(() => index = i),
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.dashboard_outlined), label: 'Dashboard'),
-          NavigationDestination(icon: Icon(Icons.map_outlined), label: 'Report'),
-          NavigationDestination(icon: Icon(Icons.search), label: 'Consult'),
-        ],
       ),
     );
   }
