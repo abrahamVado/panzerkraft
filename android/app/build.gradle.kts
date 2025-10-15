@@ -61,18 +61,17 @@ android {
     //7.- Porta la misma configuración de sabores citizen/admin proveniente de la app de referencia.
     flavorDimensions.add("app")
     productFlavors {
-        create("citizen") {
-            dimension = "app"
-            //7.1.- Define este sabor como predeterminado para que Flutter pueda compilar sin especificar uno.
-            isDefault = true
-            applicationIdSuffix = ".citizen"
-            versionNameSuffix = "-citizen"
-        }
-        create("admin") {
-            dimension = "app"
-            applicationIdSuffix = ".admin"
-            versionNameSuffix = "-admin"
-        }
+        //7.1.- Flutter toma este sabor como predeterminado al declararlo en primer lugar.
+create("citizen") {
+        dimension = "app"
+        applicationIdSuffix = ".citizen"
+        versionNameSuffix = "-citizen"
+    }
+create("admin") {
+        dimension = "app"
+        applicationIdSuffix = ".admin"
+        versionNameSuffix = "-admin"
+    }
     }
 
     //8.- Mantiene la firma de release utilizando las claves de depuración como en la referencia.
