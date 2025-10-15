@@ -1,4 +1,4 @@
-package com.example.mictlan_client
+package com.example.ubberapp
 
 import android.content.pm.PackageManager
 import io.flutter.embedding.android.FlutterActivity
@@ -11,7 +11,7 @@ class MainActivity : FlutterActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         //2.- Registramos un MethodChannel para exponer configuraciones nativas a Flutter.
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.example.mictlan_client/config")
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.example.ubberapp/config")
             .setMethodCallHandler { call, result ->
                 when (call.method) {
                     "isGoogleMapsConfigured" -> result.success(isGoogleMapsConfigured())

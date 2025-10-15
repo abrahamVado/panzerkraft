@@ -7,19 +7,19 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
 
-import 'package:mictlan_client/main.dart';
-import 'package:mictlan_client/models/ride_route_models.dart';
-import 'package:mictlan_client/providers/auction/auction_controller.dart';
-import 'package:mictlan_client/providers/ride_creation_providers.dart';
-import 'package:mictlan_client/screens/auth/login_screen.dart';
-import 'package:mictlan_client/screens/dashboard/dashboard_screen.dart';
-import 'package:mictlan_client/screens/ride_creation/auction_screen.dart';
-import 'package:mictlan_client/screens/ride_creation/ride_map_screen.dart';
-import 'package:mictlan_client/screens/ride_creation/route_selection_screen.dart';
-import 'package:mictlan_client/services/auction/bid_generator.dart';
-import 'package:mictlan_client/services/location/directions_service.dart';
-import 'package:mictlan_client/services/location/place_autocomplete_service.dart';
-import 'package:mictlan_client/services/location/ride_location_service.dart';
+import 'package:ubberapp/main.dart';
+import 'package:ubberapp/models/ride_route_models.dart';
+import 'package:ubberapp/providers/auction/auction_controller.dart';
+import 'package:ubberapp/providers/ride_creation_providers.dart';
+import 'package:ubberapp/screens/auth/login_screen.dart';
+import 'package:ubberapp/screens/dashboard/dashboard_screen.dart';
+import 'package:ubberapp/screens/ride_creation/auction_screen.dart';
+import 'package:ubberapp/screens/ride_creation/ride_map_screen.dart';
+import 'package:ubberapp/screens/ride_creation/route_selection_screen.dart';
+import 'package:ubberapp/services/auction/bid_generator.dart';
+import 'package:ubberapp/services/location/directions_service.dart';
+import 'package:ubberapp/services/location/place_autocomplete_service.dart';
+import 'package:ubberapp/services/location/ride_location_service.dart';
 
 class _FakeGoogleMapsFlutterPlatform extends FakeGoogleMapsFlutterPlatform {}
 
@@ -146,17 +146,12 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: const MictlanApp(),
+        child: UbberApp(),
       ),
     );
     await tester.pumpAndSettle();
 
     //7.- Iniciamos sesión con credenciales válidas para desbloquear el dashboard.
-    await tester.enterText(
-      find.byKey(loginEmailFieldKey),
-      'itzel.rider@example.com',
-    );
-    await tester.enterText(find.byKey(loginPasswordFieldKey), 'quetzal123');
     await tester.tap(find.byKey(loginSubmitButtonKey));
     await tester.pumpAndSettle();
 

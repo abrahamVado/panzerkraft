@@ -3,11 +3,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-import 'package:mictlan_client/models/ride_route_models.dart';
-import 'package:mictlan_client/providers/ride_creation_providers.dart';
-import 'package:mictlan_client/screens/ride_creation/route_selection_screen.dart';
-import 'package:mictlan_client/services/location/directions_service.dart';
-import 'package:mictlan_client/services/location/place_autocomplete_service.dart';
+import 'package:ubberapp/models/ride_route_models.dart';
+import 'package:ubberapp/providers/ride_creation_providers.dart';
+import 'package:ubberapp/screens/ride_creation/route_selection_screen.dart';
+import 'package:ubberapp/services/location/directions_service.dart';
+import 'package:ubberapp/services/location/place_autocomplete_service.dart';
 
 //1.- FakePlaceAutocompleteService devuelve datos determinísticos sin tocar la red real.
 class FakePlaceAutocompleteService extends PlaceAutocompleteService {
@@ -100,14 +100,16 @@ Widget _buildTestableScreen({
   required ProviderContainer container,
   ValueNotifier<Set<Marker>>? markersLog,
   ValueNotifier<Set<Polyline>>? polylinesLog,
+  ValueNotifier<void Function(LatLng position)?>? onMapTapLog,
 }) {
   return UncontrolledProviderScope(
     container: container,
     child: MaterialApp(
       home: RouteSelectionScreen(
-        mapBuilder: (context, markers, polylines) {
+        mapBuilder: (context, markers, polylines, onTap) {
           markersLog?.value = markers;
           polylinesLog?.value = polylines;
+          onMapTapLog?.value = onTap;
           return const SizedBox.shrink();
         },
       ),
@@ -170,5 +172,36 @@ void main() {
     await tester.pump();
 
     expect(tester.widget<FilledButton>(startButton).onPressed, isNotNull);
+  });
+
+  testWidgets('tocar el mapa llena el origen y el destino según el foco',
+      (tester) async {
+    final container = _createContainer();
+    final mapTapLog = ValueNotifier<void Function(LatLng)?>(null);
+
+    await tester.pumpWidget(
+      _buildTestableScreen(
+        container: container,
+        onMapTapLog: mapTapLog,
+      ),
+    );
+
+    expect(mapTapLog.value, isNotNull);
+
+    mapTapLog.value!(const LatLng(19.2, -99.2));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.textContaining('Origen seleccionado'),
+      findsOneWidget,
+    );
+
+    mapTapLog.value!(const LatLng(19.3, -99.3));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.textContaining('Destino seleccionado'),
+      findsOneWidget,
+    );
   });
 }

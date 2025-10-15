@@ -9,14 +9,14 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
 import 'package:http/http.dart' as http;
-import 'package:mictlan_client/screens/map_report_screen.dart';
-import 'package:mictlan_client/providers/folio_providers.dart';
-import 'package:mictlan_client/services/api.dart';
-import 'package:mictlan_client/services/folio_repository.dart';
-import 'package:mictlan_client/services/location_service.dart';
-import 'package:mictlan_client/services/session_service.dart';
-import 'package:mictlan_client/services/google_maps_availability.dart';
-import 'package:mictlan_client/theme/shad_theme_builder.dart';
+import 'package:ubberapp/screens/map_report_screen.dart';
+import 'package:ubberapp/providers/folio_providers.dart';
+import 'package:ubberapp/services/api.dart';
+import 'package:ubberapp/services/folio_repository.dart';
+import 'package:ubberapp/services/location_service.dart';
+import 'package:ubberapp/services/session_service.dart';
+import 'package:ubberapp/services/google_maps_availability.dart';
+import 'package:ubberapp/theme/shad_theme_builder.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shad;
 
 //1.- _FakeGoogleMapsPlatform neutraliza las dependencias de plataforma del mapa.

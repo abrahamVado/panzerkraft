@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mictlan_client/providers/folio_providers.dart';
-import 'package:mictlan_client/screens/consult_screen.dart';
-import 'package:mictlan_client/services/folio_repository.dart';
-import 'package:mictlan_client/services/session_service.dart';
+import 'package:ubberapp/providers/folio_providers.dart';
+import 'package:ubberapp/screens/consult_screen.dart';
+import 'package:ubberapp/services/folio_repository.dart';
+import 'package:ubberapp/services/session_service.dart';
 
 void main() {
   group('ConsultScreen', () {

@@ -1,5 +1,5 @@
 
-# Mictlan Client Prototype (Flutter)
+# Ubberapp Client Prototype (Flutter)
 
 Prototype app for citizens (clients) to:
 - Report a problem from a Google Map with a bento menu of incident types.

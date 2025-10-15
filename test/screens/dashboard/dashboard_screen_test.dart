@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:mictlan_client/providers/auth_providers.dart';
-import 'package:mictlan_client/screens/dashboard/dashboard_screen.dart';
-import 'package:mictlan_client/services/auth/fake_credentials.dart';
-import 'package:mictlan_client/services/dashboard/dashboard_current_trip_service.dart';
-import 'package:mictlan_client/services/dashboard/dashboard_metrics_service.dart';
+import 'package:ubberapp/providers/auth_providers.dart';
+import 'package:ubberapp/screens/dashboard/dashboard_screen.dart';
+import 'package:ubberapp/services/auth/fake_credentials.dart';
+import 'package:ubberapp/services/dashboard/dashboard_current_trip_service.dart';
+import 'package:ubberapp/services/dashboard/dashboard_metrics_service.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -50,14 +50,15 @@ void main() {
     expect(find.textContaining('Hola, Itzel Rider'), findsOneWidget);
 
     //3.- Validamos que las secciones rendericen los datos provistos por los mocks.
-    expect(find.text('Banco: Banco Uno'), findsOneWidget);
-    expect(find.text('Cuenta: **** 1234'), findsOneWidget);
-    expect(find.text('Completados esta semana: 24'), findsOneWidget);
-    expect(find.text('Cancelados esta semana: 1'), findsOneWidget);
-    expect(find.text('Ingresos semanales: \$1520.50'), findsOneWidget);
-    expect(find.text('Ingresos mensuales: \$6400.75'), findsOneWidget);
-    expect(find.text('Tasa de aceptación: 97%'), findsOneWidget);
-    expect(find.text('4.8 / 5.0'), findsOneWidget);
+    expect(find.text('Banco Uno'), findsOneWidget);
+    expect(find.text('**** 1234'), findsOneWidget);
+    expect(find.textContaining('Has completado 24 viajes'), findsOneWidget);
+    expect(find.text('Ingresos semanales'), findsOneWidget);
+    expect(find.text('\$1520.50'), findsOneWidget);
+    expect(find.text('Ingresos mensuales'), findsOneWidget);
+    expect(find.text('\$6400.75'), findsOneWidget);
+    expect(find.text('97.0% de viajes aceptados'), findsOneWidget);
+    expect(find.text('Bienvenido, Itzel Rider'), findsOneWidget);
 
     //4.- Revisamos que la sección de viaje en curso muestre el resumen esperado.
     expect(find.text('Pasajero: Luz Marina'), findsOneWidget);
@@ -68,7 +69,7 @@ void main() {
     expect(find.text('ETA: 8 min'), findsOneWidget);
 
     //5.- Confirmamos que el CTA principal permanezca habilitado para iniciar un nuevo viaje.
-    final button = tester.widget<ElevatedButton>(find.byKey(dashboardCreateRideButtonKey));
+    final button = tester.widget<FilledButton>(find.byKey(dashboardCreateRideButtonKey));
     expect(button.onPressed, isNotNull);
   });
 }

@@ -100,20 +100,20 @@ class _BootstrapAppState extends State<BootstrapApp> {
           );
         }
         _container = snapshot.data;
-        return UncontrolledProviderScope(container: _container!, child: const MictlanApp());
+        return UncontrolledProviderScope(container: _container!, child: const UbberApp());
       },
     );
   }
 }
 
-class MictlanApp extends ConsumerStatefulWidget {
-  const MictlanApp({super.key});
+class UbberApp extends ConsumerStatefulWidget {
+  const UbberApp({super.key});
 
   @override
-  ConsumerState<MictlanApp> createState() => _MictlanAppState();
+  ConsumerState<UbberApp> createState() => _UbberAppState();
 }
 
-class _MictlanAppState extends ConsumerState<MictlanApp> {
+class _UbberAppState extends ConsumerState<UbberApp> {
   late final ThemeController _controller;
 
   @override
@@ -150,7 +150,7 @@ class _MictlanAppState extends ConsumerState<MictlanApp> {
           return shad.Theme(
             data: shadTheme,
             child: MaterialApp.router(
-              title: 'Mictlan Client',
+              title: 'Ubberapp',
               themeMode: _controller.mode,
               theme: ThemeData(colorScheme: colorScheme, useMaterial3: true),
               darkTheme: ThemeData(colorScheme: darkColorScheme, useMaterial3: true),

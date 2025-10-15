@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:mictlan_client/services/location_service.dart';
+import 'package:ubberapp/services/location_service.dart';
 
 //1.- main agrupa las verificaciones del servicio de geoubicación.
 void main() {

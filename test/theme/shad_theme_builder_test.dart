@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mictlan_client/theme/shad_theme_builder.dart';
+import 'package:ubberapp/theme/shad_theme_builder.dart';
 
 void main() {
   group('ShadThemeBuilder', () {

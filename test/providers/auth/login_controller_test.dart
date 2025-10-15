@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:mictlan_client/providers/auth_providers.dart';
+import 'package:ubberapp/providers/auth_providers.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -45,5 +45,24 @@ void main() {
     expect(signedIn, isNotNull);
     expect(signedIn!.email, 'guest@panzerkraft.local');
     expect(signedIn.name, 'Rider Demo');
+  });
+
+  test('signInAsDemo genera credenciales aleatorias con dominio ubberapp', () async {
+    //1.- Inicializamos un contenedor independiente para la prueba de demo rápida.
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+
+    final controller = container.read(loginControllerProvider.notifier);
+
+    //2.- signInAsDemo debería completar email y password automáticamente y autenticar.
+    await controller.signInAsDemo();
+
+    final state = container.read(loginControllerProvider);
+    final signedIn = container.read(signedInRiderProvider);
+
+    expect(state.email, endsWith('@ubberapp.local'));
+    expect(state.riderName, isNotEmpty);
+    expect(signedIn, isNotNull);
+    expect(signedIn!.email, endsWith('@ubberapp.local'));
   });
 }
