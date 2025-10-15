@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shad;
 
 import 'config.dart';
+import 'providers/auth_providers.dart';
+import 'screens/auth/login_screen.dart';
 import 'screens/consult_screen.dart';
 import 'screens/map_report_screen.dart';
 import 'services/identity.dart';
@@ -155,12 +157,29 @@ class _MictlanAppState extends State<MictlanApp> {
               themeMode: _controller.mode,
               theme: ThemeData(colorScheme: colorScheme, useMaterial3: true),
               darkTheme: ThemeData(colorScheme: darkColorScheme, useMaterial3: true),
-              home: const HomeScreen(),
+              home: const AuthGate(),
             ),
           );
         },
       ),
     );
+  }
+}
+
+//1.- AuthGate decide si mostrar el login o el flujo posterior a la autenticación.
+class AuthGate extends ConsumerWidget {
+  const AuthGate({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    //2.- build observa el estado del rider autenticado a través de Riverpod.
+    final rider = ref.watch(signedInRiderProvider);
+    if (rider == null) {
+      //3.- Sin sesión vigente devolvemos la pantalla de ingreso.
+      return const LoginScreen();
+    }
+    //4.- Con sesión activa presentamos la experiencia original.
+    return const HomeScreen();
   }
 }
 
