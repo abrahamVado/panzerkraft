@@ -24,8 +24,8 @@ pluginManagement {
         id("dev.flutter.flutter-gradle-plugin") version "1.0.0" apply false
         //5.2.- Plugin de Android con la versión 8.9.1 adoptada por la configuración clonada.
         id("com.android.application") version "8.9.1" apply false
-        //5.3.- Plugin de Kotlin Android en la misma versión que la referencia.
-        id("org.jetbrains.kotlin.android") version "2.1.0" apply false
+        //5.3.- Plugin de Kotlin Android en la versión 1.9.24 compatible con el AGP 8.9.1.
+        id("org.jetbrains.kotlin.android") version "1.9.24" apply false
     }
 }
 
