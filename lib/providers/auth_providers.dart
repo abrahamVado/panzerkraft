@@ -75,70 +75,74 @@ class LoginController extends AutoDisposeNotifier<LoginFormState> {
     return LoginFormState.initial();
   }
 
-  //8.- updateEmail normaliza y valida el correo mientras limpia mensajes previos.
+  //8.- updateEmail normaliza el correo y mantiene el formulario siempre habilitado.
   void updateEmail(String value) {
     final trimmed = value.trim();
     state = state.copyWith(
       email: trimmed,
-      isValidEmail: _isValidEmail(trimmed),
+      isValidEmail: true,
       errorMessage: null,
       riderName: null,
     );
   }
 
-  //9.- updatePassword verifica la longitud mínima y reinicia mensajes transitorios.
+  //9.- updatePassword mantiene la contraseña sincronizada sin bloquear el envío.
   void updatePassword(String value) {
     state = state.copyWith(
       password: value,
-      isValidPassword: _isValidPassword(value),
+      isValidPassword: true,
       errorMessage: null,
       riderName: null,
     );
   }
 
-  //10.- submit intenta autenticar en el almacén y publica el resultado.
+  //10.- submit crea una sesión demo aceptando cualquier combinación de credenciales.
   Future<void> submit() async {
-    final email = state.email.trim().toLowerCase();
-    final password = state.password;
-    final emailOk = _isValidEmail(email);
-    final passwordOk = _isValidPassword(password);
-    if (!emailOk || !passwordOk) {
-      state = state.copyWith(
-        isValidEmail: emailOk,
-        isValidPassword: passwordOk,
-        isSubmitting: false,
-        errorMessage: 'Revisa los datos ingresados.',
-        riderName: null,
-      );
-      return;
-    }
-    state = state.copyWith(isSubmitting: true, errorMessage: null, riderName: null);
-    final store = ref.read(fakeCredentialStoreProvider);
-    final account = store.authenticate(email, password);
-    if (account != null) {
-      ref.read(signedInRiderProvider.notifier).state = account;
-      state = state.copyWith(
-        isSubmitting: false,
-        errorMessage: null,
-        riderName: account.name,
-      );
-    } else {
-      state = state.copyWith(
-        isSubmitting: false,
-        errorMessage: 'No pudimos verificar tus credenciales.',
-        riderName: null,
-      );
-    }
+    final rawEmail = state.email.trim();
+    final normalizedEmail =
+        rawEmail.isEmpty ? _demoFallbackEmail : rawEmail.toLowerCase();
+    state = state.copyWith(
+      isSubmitting: true,
+      errorMessage: null,
+      riderName: null,
+      isValidEmail: true,
+      isValidPassword: true,
+      email: normalizedEmail,
+    );
+    final account = RiderAccount(
+      email: normalizedEmail,
+      name: _deriveName(normalizedEmail),
+    );
+    ref.read(signedInRiderProvider.notifier).state = account;
+    state = state.copyWith(
+      isSubmitting: false,
+      errorMessage: null,
+      riderName: account.name,
+      isValidEmail: true,
+      isValidPassword: true,
+      email: normalizedEmail,
+    );
   }
 
-  //11.- _isValidEmail usa una expresión simple para verificar formato.
-  bool _isValidEmail(String value) {
-    final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
-    return emailRegex.hasMatch(value);
-  }
+  //11.- _demoFallbackEmail garantiza una identidad cuando no se ingresa correo.
+  static const _demoFallbackEmail = 'guest@panzerkraft.local';
 
-  //12.- _isValidPassword exige al menos 6 caracteres para evitar intentos triviales.
-  bool _isValidPassword(String value) => value.trim().length >= 6;
+  //12.- _deriveName genera un nombre legible a partir del correo proporcionado.
+  String _deriveName(String email) {
+    final prefix = email.split('@').first;
+    final segments = prefix
+        .split(RegExp(r'[._-]+'))
+        .where((segment) => segment.trim().isNotEmpty)
+        .map(
+          (segment) =>
+              segment[0].toUpperCase() + segment.substring(1).toLowerCase(),
+        )
+        .toList();
+    if (segments.isEmpty) {
+      return 'Rider Demo';
+    }
+    return segments.join(' ');
+  }
 }
 
 //13.- loginControllerProvider expone el controlador para el árbol de widgets.
