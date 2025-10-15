@@ -8,23 +8,31 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../models/ride_route_models.dart';
 import '../../providers/ride_creation_providers.dart';
 import '../../router/app_router.dart';
+import '../../services/location/directions_service.dart';
 
 //1.- Claves globales para facilitar la interacción en pruebas automatizadas.
 const routeSelectionOriginFieldKey = Key('route_selection_origin_field');
-const routeSelectionDestinationFieldKey = Key('route_selection_destination_field');
+const routeSelectionDestinationFieldKey = Key(
+  'route_selection_destination_field',
+);
 const routeSelectionStartButtonKey = Key('route_selection_start_button');
 const routeSelectionMapKey = Key('route_selection_map');
 
 //2.- RouteSelectionScreen gestiona el formulario previo a lanzar la subasta de viaje.
 class RouteSelectionScreen extends ConsumerStatefulWidget {
   //3.- mapBuilder permite inyectar un mapa simulado durante pruebas de widgets.
-  final Widget Function(BuildContext context, Set<Marker> markers,
-      Set<Polyline> polylines)? mapBuilder;
+  final Widget Function(
+    BuildContext context,
+    Set<Marker> markers,
+    Set<Polyline> polylines,
+  )?
+  mapBuilder;
 
   const RouteSelectionScreen({super.key, this.mapBuilder});
 
   @override
-  ConsumerState<RouteSelectionScreen> createState() => _RouteSelectionScreenState();
+  ConsumerState<RouteSelectionScreen> createState() =>
+      _RouteSelectionScreenState();
 }
 
 class _RouteSelectionScreenState extends ConsumerState<RouteSelectionScreen> {
@@ -39,7 +47,7 @@ class _RouteSelectionScreenState extends ConsumerState<RouteSelectionScreen> {
   void initState() {
     super.initState();
     //4.- Escuchamos cambios para sincronizar los campos con la selección final.
-    _subscription = ref.listen<RideRouteState>(
+    _subscription = ref.listenManual<RideRouteState>(
       routeSelectionControllerProvider,
       (previous, next) {
         if (previous?.origin != next.origin) {
@@ -91,7 +99,9 @@ class _RouteSelectionScreenState extends ConsumerState<RouteSelectionScreen> {
 
   void _selectOrigin(PlaceSuggestion suggestion) {
     //8.- Al tocar una sugerencia fijamos el valor y lanzamos la resolución de coordenadas.
-    ref.read(routeSelectionControllerProvider.notifier).selectOrigin(suggestion);
+    ref
+        .read(routeSelectionControllerProvider.notifier)
+        .selectOrigin(suggestion);
     FocusScope.of(context).unfocus();
   }
 
@@ -158,9 +168,7 @@ class _RouteSelectionScreenState extends ConsumerState<RouteSelectionScreen> {
         Polyline(
           polylineId: PolylineId('route_$i'),
           points: points,
-          color: route == state.selectedRoute
-              ? Colors.blueAccent
-              : Colors.grey,
+          color: route == state.selectedRoute ? Colors.blueAccent : Colors.grey,
           width: route == state.selectedRoute ? 6 : 4,
         ),
       );
@@ -236,8 +244,9 @@ class _RouteSelectionScreenState extends ConsumerState<RouteSelectionScreen> {
                   decoration: InputDecoration(
                     labelText: 'Origin',
                     suffixIcon: IconButton(
-                      onPressed: () =>
-                          ref.read(routeSelectionControllerProvider.notifier).clearOrigin(),
+                      onPressed: () => ref
+                          .read(routeSelectionControllerProvider.notifier)
+                          .clearOrigin(),
                       icon: const Icon(Icons.clear),
                     ),
                   ),
@@ -279,7 +288,10 @@ class _RouteSelectionScreenState extends ConsumerState<RouteSelectionScreen> {
                   },
                 ),
                 const SizedBox(height: 8),
-                _buildSuggestionList(state.destinationSuggestions, _selectDestination),
+                _buildSuggestionList(
+                  state.destinationSuggestions,
+                  _selectDestination,
+                ),
                 const SizedBox(height: 16),
                 Expanded(
                   child: ClipRRect(
@@ -288,21 +300,19 @@ class _RouteSelectionScreenState extends ConsumerState<RouteSelectionScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                if (state.isLoadingRoutes)
-                  const LinearProgressIndicator(),
+                if (state.isLoadingRoutes) const LinearProgressIndicator(),
                 if (state.errorMessage != null)
                   Padding(
                     padding: const EdgeInsets.only(top: 8),
                     child: Text(
                       state.errorMessage!,
-                      style: theme.textTheme.bodyMedium?.copyWith(color: Colors.red),
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: Colors.red,
+                      ),
                     ),
                   ),
                 const SizedBox(height: 16),
-                Text(
-                  'Route options',
-                  style: theme.textTheme.titleMedium,
-                ),
+                Text('Route options', style: theme.textTheme.titleMedium),
                 const SizedBox(height: 8),
                 ...[
                   for (var i = 0; i < state.routes.length; i++)
@@ -310,11 +320,12 @@ class _RouteSelectionScreenState extends ConsumerState<RouteSelectionScreen> {
                       child: ListTile(
                         key: Key('route_option_$i'),
                         title: Text(state.routes[i].summary),
-                        subtitle: Text(
-                          _formatRouteMetadata(state.routes[i]),
-                        ),
+                        subtitle: Text(_formatRouteMetadata(state.routes[i])),
                         trailing: state.selectedRoute == state.routes[i]
-                            ? const Icon(Icons.check_circle, color: Colors.green)
+                            ? const Icon(
+                                Icons.check_circle,
+                                color: Colors.green,
+                              )
                             : null,
                         onTap: () => ref
                             .read(routeSelectionControllerProvider.notifier)
@@ -324,7 +335,8 @@ class _RouteSelectionScreenState extends ConsumerState<RouteSelectionScreen> {
                 ],
                 FilledButton(
                   key: routeSelectionStartButtonKey,
-                  onPressed: state.origin != null &&
+                  onPressed:
+                      state.origin != null &&
                           state.destination != null &&
                           state.selectedRoute != null
                       ? _startAuction

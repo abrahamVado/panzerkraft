@@ -112,22 +112,29 @@ void main() {
     GoogleMapsFlutterPlatform.instance = _FakeGoogleMapsFlutterPlatform();
   });
 
-  testWidgets('permite completar el flujo de taxi hasta la subasta', (tester) async {
+  testWidgets('permite completar el flujo de taxi hasta la subasta', (
+    tester,
+  ) async {
     //6.- Configuramos overrides para simular servicios externos y temporizadores.
     final container = ProviderContainer(
       overrides: [
-        rideLocationServiceProvider.overrideWithValue(const _TestRideLocationService()),
-        placeAutocompleteServiceProvider.overrideWithValue(_TestPlaceAutocompleteService()),
+        rideLocationServiceProvider.overrideWithValue(
+          const _TestRideLocationService(),
+        ),
+        placeAutocompleteServiceProvider.overrideWithValue(
+          _TestPlaceAutocompleteService(),
+        ),
         directionsServiceProvider.overrideWithValue(_TestDirectionsService()),
         auctionTimingConfigProvider.overrideWithValue(
-          const AuctionTimingConfig(
+          AuctionTimingConfig(
             tickInterval: Duration(milliseconds: 100),
             minCountdown: Duration(milliseconds: 400),
             maxCountdown: Duration(milliseconds: 400),
           ),
         ),
         auctionTickerProvider.overrideWithValue(
-          (interval) => Stream.periodic(interval, (count) => interval * (count + 1)),
+          (interval) =>
+              Stream.periodic(interval, (count) => interval * (count + 1)),
         ),
         bidGeneratorProvider.overrideWithValue(
           BidGenerator(random: Random(4), spread: 0.05),
@@ -145,7 +152,10 @@ void main() {
     await tester.pumpAndSettle();
 
     //7.- Iniciamos sesión con credenciales válidas para desbloquear el dashboard.
-    await tester.enterText(find.byKey(loginEmailFieldKey), 'itzel.rider@example.com');
+    await tester.enterText(
+      find.byKey(loginEmailFieldKey),
+      'itzel.rider@example.com',
+    );
     await tester.enterText(find.byKey(loginPasswordFieldKey), 'quetzal123');
     await tester.tap(find.byKey(loginSubmitButtonKey));
     await tester.pumpAndSettle();
@@ -171,7 +181,10 @@ void main() {
     await tester.tap(find.text('Alpha Base'));
     await tester.pumpAndSettle();
 
-    await tester.enterText(find.byKey(routeSelectionDestinationFieldKey), 'Beta');
+    await tester.enterText(
+      find.byKey(routeSelectionDestinationFieldKey),
+      'Beta',
+    );
     await tester.pump(const Duration(milliseconds: 400));
     await tester.tap(find.text('Beta Station'));
     await tester.pump();
