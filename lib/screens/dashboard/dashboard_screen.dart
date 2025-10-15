@@ -64,13 +64,13 @@ class DashboardScreen extends ConsumerWidget {
                   children: [
                     _DashboardGreetingBanner(riderName: rider.name, metrics: metrics),
                     const SizedBox(height: 16),
-                    //4.- LayoutBuilder ajusta las tarjetas para garantizar una altura mínima.
+                    //4.- LayoutBuilder ajusta las tarjetas para garantizar una altura mínima en una cuadrícula 2x3.
                     LayoutBuilder(
                       builder: (context, constraints) {
                         const spacing = 12.0;
                         const minHeight = 240.0;
                         final maxWidth = constraints.maxWidth;
-                        const crossAxisCount = 3;
+                        const crossAxisCount = 2;
                         final totalSpacing = spacing * (crossAxisCount - 1);
                         final clampedWidth =
                             (maxWidth - totalSpacing).clamp(160.0, double.infinity)
