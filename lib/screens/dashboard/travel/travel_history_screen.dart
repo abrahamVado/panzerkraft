@@ -1,0 +1,136 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../providers/dashboard/travel_history_controller.dart';
+import '../../../services/dashboard/dashboard_travel_history_service.dart';
+
+//1.- TravelHistoryScreen muestra la lista paginada de viajes completados.
+class TravelHistoryScreen extends ConsumerWidget {
+  const TravelHistoryScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final pageState = ref.watch(travelHistoryControllerProvider);
+    final controller = ref.read(travelHistoryControllerProvider.notifier);
+    return Scaffold(
+      appBar: AppBar(title: const Text('Historial de viajes')),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: pageState.when(
+          data: (page) {
+            if (page.entries.isEmpty) {
+              return const Center(
+                child: Text('Aún no registramos viajes finalizados en tu cuenta.'),
+              );
+            }
+            return Column(
+              children: [
+                Expanded(
+                  child: RefreshIndicator(
+                    onRefresh: controller.refresh,
+                    child: ListView.separated(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      itemCount: page.entries.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      itemBuilder: (context, index) {
+                        final entry = page.entries[index];
+                        return _TravelHistoryTile(entry: entry);
+                      },
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    OutlinedButton.icon(
+                      onPressed: page.hasPreviousPage ? controller.previousPage : null,
+                      icon: const Icon(Icons.arrow_back),
+                      label: const Text('Anterior'),
+                    ),
+                    Text('Página ${page.displayPage} de ${page.totalPages}'),
+                    OutlinedButton.icon(
+                      onPressed: page.hasNextPage ? controller.nextPage : null,
+                      icon: const Icon(Icons.arrow_forward),
+                      label: const Text('Siguiente'),
+                    ),
+                  ],
+                ),
+              ],
+            );
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, _) => _TravelHistoryError(
+            message: error is StateError
+                ? error.message
+                : 'No pudimos cargar tu historial. Intenta nuevamente.',
+            onRetry: controller.refresh,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+//2.- _TravelHistoryTile presenta los detalles principales de un viaje.
+class _TravelHistoryTile extends StatelessWidget {
+  const _TravelHistoryTile({required this.entry});
+
+  final TravelHistoryEntry entry;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '${entry.origin} → ${entry.destination}',
+              style: theme.textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            Text('Fecha: ${_formatDate(entry.date)}'),
+            Text('Duración: ${entry.durationMinutes} min'),
+            Text('Distancia: ${entry.distanceKm.toStringAsFixed(1)} km'),
+            Text('Tarifa: ${entry.fare.toStringAsFixed(2)} MXN'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    final day = date.day.toString().padLeft(2, '0');
+    final month = date.month.toString().padLeft(2, '0');
+    return '$day/$month/${date.year}';
+  }
+}
+
+//3.- _TravelHistoryError comunica fallos con un botón de reintento.
+class _TravelHistoryError extends StatelessWidget {
+  const _TravelHistoryError({required this.message, required this.onRetry});
+
+  final String message;
+  final Future<void> Function() onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(message, textAlign: TextAlign.center),
+          const SizedBox(height: 12),
+          FilledButton.icon(
+            onPressed: onRetry,
+            icon: const Icon(Icons.refresh),
+            label: const Text('Reintentar'),
+          ),
+        ],
+      ),
+    );
+  }
+}

@@ -31,6 +31,14 @@ void main() {
       status: 'En curso',
       vehiclePlate: 'TAX-456',
       etaMinutes: 8,
+      amount: 180.50,
+      durationMinutes: 22,
+      distanceKm: 11.5,
+      vehicleModel: 'Sedán Confort',
+      driverName: 'Conductor Rider',
+      driverRating: 4.9,
+      driverExperienceYears: 6,
+      driverPhone: '+52 55 5555 0000',
     );
 
     await tester.pumpWidget(
@@ -67,6 +75,9 @@ void main() {
     expect(find.text('Estado: En curso'), findsOneWidget);
     expect(find.text('Placas: TAX-456'), findsOneWidget);
     expect(find.text('ETA: 8 min'), findsOneWidget);
+    expect(find.text('Monto estimado: 180.50 MXN'), findsOneWidget);
+    expect(find.text('Duración estimada: 22 min'), findsOneWidget);
+    expect(find.text('Distancia estimada: 11.5 km'), findsOneWidget);
 
     //5.- Confirmamos que el CTA principal permanezca habilitado para iniciar un nuevo viaje.
     final button = tester.widget<FilledButton>(find.byKey(dashboardCreateRideButtonKey));
