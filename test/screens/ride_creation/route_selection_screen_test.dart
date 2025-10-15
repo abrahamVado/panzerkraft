@@ -176,6 +176,39 @@ void main() {
     expect(find.textContaining('Ruta: Scenic'), findsOneWidget);
   });
 
+  testWidgets('selected route polyline stands out with accent styling',
+      (tester) async {
+    final container = _createContainer();
+    final polylinesLog = ValueNotifier<Set<Polyline>>({});
+
+    await tester.pumpWidget(
+      _buildTestableScreen(
+        container: container,
+        polylinesLog: polylinesLog,
+      ),
+    );
+
+    await tester.enterText(find.byKey(routeSelectionOriginFieldKey), 'Alpha');
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.tap(find.text('Alpha Base'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+        find.byKey(routeSelectionDestinationFieldKey), 'Beta');
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.tap(find.text('Beta Station'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+
+    expect(polylinesLog.value, isNotEmpty);
+    final selectedPolyline = polylinesLog.value.firstWhere(
+      (polyline) => polyline.width == 6,
+      orElse: () => throw StateError('No highlighted polyline found'),
+    );
+    expect(selectedPolyline.color, Colors.blueAccent);
+    expect(selectedPolyline.zIndex, 1);
+  });
+
   testWidgets('tocar el mapa llena el origen y el destino según el foco',
       (tester) async {
     final container = _createContainer();

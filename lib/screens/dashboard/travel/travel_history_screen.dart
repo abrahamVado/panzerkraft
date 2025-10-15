@@ -4,6 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../providers/dashboard/travel_history_controller.dart';
 import '../../../services/dashboard/dashboard_travel_history_service.dart';
 
+//1.1.- travelHistoryThumbnailAsset indica el recurso por defecto para las tarjetas.
+const travelHistoryThumbnailAsset =
+    'assets/images/travel_history/default_thumbnail.png';
+
+//1.2.- travelHistoryThumbnailKey permite ubicar la miniatura en pruebas de widgets.
+const travelHistoryThumbnailKey = Key('travel_history_thumbnail');
+
 //1.- TravelHistoryScreen muestra la lista paginada de viajes completados.
 class TravelHistoryScreen extends ConsumerWidget {
   const TravelHistoryScreen({super.key});
@@ -84,18 +91,27 @@ class _TravelHistoryTile extends StatelessWidget {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Column(
+        child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              '${entry.origin} → ${entry.destination}',
-              style: theme.textTheme.titleMedium,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${entry.origin} → ${entry.destination}',
+                    style: theme.textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Text('Fecha: ${_formatDate(entry.date)}'),
+                  Text('Duración: ${entry.durationMinutes} min'),
+                  Text('Distancia: ${entry.distanceKm.toStringAsFixed(1)} km'),
+                  Text('Tarifa: ${entry.fare.toStringAsFixed(2)} MXN'),
+                ],
+              ),
             ),
-            const SizedBox(height: 8),
-            Text('Fecha: ${_formatDate(entry.date)}'),
-            Text('Duración: ${entry.durationMinutes} min'),
-            Text('Distancia: ${entry.distanceKm.toStringAsFixed(1)} km'),
-            Text('Tarifa: ${entry.fare.toStringAsFixed(2)} MXN'),
+            const SizedBox(width: 16),
+            const _TravelHistoryThumbnail(),
           ],
         ),
       ),
@@ -106,6 +122,45 @@ class _TravelHistoryTile extends StatelessWidget {
     final day = date.day.toString().padLeft(2, '0');
     final month = date.month.toString().padLeft(2, '0');
     return '$day/$month/${date.year}';
+  }
+}
+
+//2.1.- _TravelHistoryThumbnail reserva espacio para la imagen ilustrativa del viaje.
+class _TravelHistoryThumbnail extends StatelessWidget {
+  const _TravelHistoryThumbnail();
+
+  static const double _thumbnailWidth = 120;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return SizedBox(
+      width: _thumbnailWidth,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: AspectRatio(
+          aspectRatio: 4 / 3,
+          child: Image.asset(
+            travelHistoryThumbnailAsset,
+            key: travelHistoryThumbnailKey,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return DecoratedBox(
+                decoration: BoxDecoration(
+                  color: colorScheme.surfaceVariant,
+                ),
+                child: Center(
+                  child: Icon(
+                    Icons.photo,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
   }
 }
 
