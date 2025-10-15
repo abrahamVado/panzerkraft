@@ -31,7 +31,7 @@ android {
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
-    //7.- Alinea la compatibilidad de Java con la configuración importada y los requisitos de AGP 8.5.
+    //7.- Alinea la compatibilidad de Java con la configuración importada y los requisitos del AGP 7.4.
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
