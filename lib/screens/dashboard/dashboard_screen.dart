@@ -50,6 +50,7 @@ class DashboardScreen extends ConsumerWidget {
           ? const Center(child: Text('Inicia sesión para ver tu tablero.'))
           : metricsAsync.when(
               data: (metrics) {
+                final currentTrip = currentTripAsync.asData?.value;
                 final currentTripSection = currentTripAsync.when(
                   data: (trip) => _buildCurrentTrip(context, trip),
                   loading: () => const Text('Cargando viaje en curso...'),
@@ -57,19 +58,25 @@ class DashboardScreen extends ConsumerWidget {
                 );
                 final colorScheme = Theme.of(context).colorScheme;
                 final rideTrend = _generateRideTrend(metrics);
+                final panicEnabled = _isTripAccepted(currentTrip);
                 return ListView(
                   padding: const EdgeInsets.all(16),
                   children: [
                     _DashboardGreetingBanner(riderName: rider.name, metrics: metrics),
                     const SizedBox(height: 16),
-                    Wrap(
-                      spacing: 12,
-                      runSpacing: 12,
+                    GridView.count(
+                      crossAxisCount: 3,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      childAspectRatio: 0.9,
                       children: [
                         _DashboardQuickStat(
                           icon: Icons.account_balance,
                           title: 'Banco',
                           value: metrics.bankName,
+                          description: 'Gestiona tus datos bancarios y cobros.',
                           background: colorScheme.primaryContainer,
                           foreground: colorScheme.onPrimaryContainer,
                           actionLabel: 'Actualizar',
@@ -78,20 +85,54 @@ class DashboardScreen extends ConsumerWidget {
                         _DashboardQuickStat(
                           icon: Icons.credit_card,
                           title: 'Cuenta',
-                          value: metrics.bankAccount,
+                          value: rider.email,
+                          description: 'Edita tu perfil y datos de contacto.',
                           background: colorScheme.secondaryContainer,
                           foreground: colorScheme.onSecondaryContainer,
-                          actionLabel: 'Configurar',
-                          onAction: () => context.pushNamed(AppRoute.bankInfo.name),
+                          actionLabel: 'Editar',
+                          onAction: () => context.pushNamed(AppRoute.riderProfile.name),
                         ),
                         _DashboardQuickStat(
                           icon: Icons.star_rate,
                           title: 'Evaluación',
                           value: '${metrics.evaluationScore} / 5',
+                          description: 'Revisa el promedio de satisfacción de tus pasajeros.',
                           background: colorScheme.tertiaryContainer,
                           foreground: colorScheme.onTertiaryContainer,
                           actionLabel: 'Ver opiniones',
                           onAction: () => _showComingSoon(context, 'las opiniones detalladas'),
+                        ),
+                        _DashboardQuickStat(
+                          icon: Icons.event_available,
+                          title: 'Reserva',
+                          value: 'Anticipa viajes',
+                          description: 'Registra traslados programados para tus clientes frecuentes.',
+                          background: colorScheme.surfaceVariant,
+                          foreground: colorScheme.onSurfaceVariant,
+                          actionLabel: 'Crear',
+                          onAction: () => context.pushNamed(AppRoute.reservation.name),
+                        ),
+                        _DashboardQuickStat(
+                          icon: Icons.warning_amber_outlined,
+                          title: 'Panic Button',
+                          value: panicEnabled ? 'Listo para usar' : 'Sin viaje aceptado',
+                          description: 'Activa asistencia inmediata cuando tu seguridad esté en riesgo.',
+                          background: colorScheme.errorContainer,
+                          foreground: colorScheme.onErrorContainer,
+                          actionLabel: 'Alerta',
+                          isEnabled: panicEnabled,
+                          onAction: () =>
+                              context.pushNamed(AppRoute.panicButton.name, extra: currentTrip),
+                        ),
+                        _DashboardQuickStat(
+                          icon: Icons.support_agent,
+                          title: 'Contáctanos',
+                          value: 'Soporte 24/7',
+                          description: 'Habla con nuestro equipo para resolver dudas y reportes.',
+                          background: colorScheme.inversePrimary,
+                          foreground: colorScheme.onPrimary,
+                          actionLabel: 'Abrir',
+                          onAction: () => context.pushNamed(AppRoute.contact.name),
                         ),
                       ],
                     ),
@@ -254,6 +295,18 @@ class DashboardScreen extends ConsumerWidget {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Pronto podrás acceder a $feature.')),
     );
+  }
+
+  //17.- _isTripAccepted evalúa el estado textual para activar el botón de pánico.
+  bool _isTripAccepted(DashboardCurrentTrip? trip) {
+    if (trip == null) {
+      return false;
+    }
+    final normalizedStatus = trip.status.toLowerCase();
+    return normalizedStatus.contains('acept') ||
+        normalizedStatus.contains('curso') ||
+        normalizedStatus.contains('recogiendo') ||
+        normalizedStatus.contains('camino');
   }
 }
 
@@ -437,55 +490,68 @@ class _DashboardQuickStat extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.value,
+    required this.description,
     required this.background,
     required this.foreground,
     required this.actionLabel,
     required this.onAction,
+    this.isEnabled = true,
   });
 
   final IconData icon;
   final String title;
   final String value;
+  final String description;
   final Color background;
   final Color foreground;
   final String actionLabel;
   final VoidCallback onAction;
+  final bool isEnabled;
 
   @override
   Widget build(BuildContext context) {
-    return ConstrainedBox(
-      constraints: const BoxConstraints(minWidth: 160),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-        decoration: BoxDecoration(
-          color: background,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, color: foreground),
-            const SizedBox(height: 12),
-            Text(
-              title,
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(color: foreground.withOpacity(0.85)),
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: foreground),
+          const SizedBox(height: 12),
+          Text(
+            title,
+            style: theme.textTheme.labelLarge?.copyWith(color: foreground.withOpacity(0.85)),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.titleMedium?.copyWith(
+                  color: foreground,
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            description,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: foreground.withOpacity(0.9),
             ),
-            const SizedBox(height: 4),
-            Text(
-              value,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: foreground,
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            const SizedBox(height: 12),
-            FilledButton.tonal(
-              onPressed: onAction,
-              style: FilledButton.styleFrom(foregroundColor: foreground),
-              child: Text(actionLabel),
-            ),
-          ],
-        ),
+          ),
+          const Spacer(),
+          FilledButton.tonal(
+            onPressed: isEnabled ? onAction : null,
+            style: FilledButton.styleFrom(foregroundColor: foreground),
+            child: Text(actionLabel),
+          ),
+        ],
       ),
     );
   }

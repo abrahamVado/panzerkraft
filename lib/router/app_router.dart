@@ -6,9 +6,13 @@ import '../providers/auth_providers.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/dashboard/bank/bank_information_screen.dart';
 import '../screens/dashboard/dashboard_screen.dart';
+import '../screens/dashboard/profile/rider_profile_screen.dart';
+import '../screens/dashboard/reservations/reservation_screen.dart';
+import '../screens/dashboard/support/contact_us_screen.dart';
 import '../screens/dashboard/travel/travel_history_screen.dart';
 import '../screens/dashboard/trip/current_trip_details_screen.dart';
 import '../screens/dashboard/trip/driver_profile_screen.dart';
+import '../screens/dashboard/panic/panic_button_screen.dart';
 import '../screens/ride_creation/auction_screen.dart';
 import '../screens/ride_creation/ride_map_screen.dart';
 import '../screens/ride_creation/route_selection_screen.dart';
@@ -26,6 +30,10 @@ enum AppRoute {
   travelHistory,
   currentTripDetails,
   driverProfile,
+  riderProfile,
+  reservation,
+  panicButton,
+  contact,
 }
 
 //2.- _rootNavigatorKey mantiene una referencia global para manipular el stack raíz si es necesario.
@@ -69,6 +77,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const TravelHistoryScreen(),
       ),
       GoRoute(
+        path: '/dashboard/profile',
+        name: AppRoute.riderProfile.name,
+        builder: (context, state) => const RiderProfileScreen(),
+      ),
+      GoRoute(
         path: '/dashboard/trip/details',
         name: AppRoute.currentTripDetails.name,
         builder: (context, state) {
@@ -89,6 +102,24 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           }
           return DriverProfileScreen(trip: trip);
         },
+      ),
+      GoRoute(
+        path: '/dashboard/reservations/new',
+        name: AppRoute.reservation.name,
+        builder: (context, state) => const ReservationScreen(),
+      ),
+      GoRoute(
+        path: '/dashboard/panic',
+        name: AppRoute.panicButton.name,
+        builder: (context, state) {
+          final trip = state.extra as DashboardCurrentTrip?;
+          return PanicButtonScreen(trip: trip);
+        },
+      ),
+      GoRoute(
+        path: '/dashboard/support/contact',
+        name: AppRoute.contact.name,
+        builder: (context, state) => const ContactUsScreen(),
       ),
       GoRoute(
         path: '/ride/map',

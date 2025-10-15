@@ -59,7 +59,7 @@ void main() {
 
     //3.- Validamos que las secciones rendericen los datos provistos por los mocks.
     expect(find.text('Banco Uno'), findsOneWidget);
-    expect(find.text('**** 1234'), findsOneWidget);
+    expect(find.text('itzel.rider@example.com'), findsOneWidget);
     expect(find.textContaining('Has completado 24 viajes'), findsOneWidget);
     expect(find.text('Ingresos semanales'), findsOneWidget);
     expect(find.text('\$1520.50'), findsOneWidget);
@@ -78,9 +78,51 @@ void main() {
     expect(find.text('Monto estimado: 180.50 MXN'), findsOneWidget);
     expect(find.text('Duración estimada: 22 min'), findsOneWidget);
     expect(find.text('Distancia estimada: 11.5 km'), findsOneWidget);
+    expect(find.text('Anticipa viajes'), findsOneWidget);
+    expect(find.text('Soporte 24/7'), findsOneWidget);
 
     //5.- Confirmamos que el CTA principal permanezca habilitado para iniciar un nuevo viaje.
     final button = tester.widget<FilledButton>(find.byKey(dashboardCreateRideButtonKey));
     expect(button.onPressed, isNotNull);
+
+    //6.- Validamos que el botón de alerta esté disponible cuando existe un viaje aceptado.
+    final panicButton = tester.widget<FilledButton>(
+      find.widgetWithText(FilledButton, 'Alerta').first,
+    );
+    expect(panicButton.onPressed, isNotNull);
+  });
+
+  testWidgets('deshabilita el botón de pánico sin viaje aceptado', (tester) async {
+    const rider = RiderAccount(email: 'itzel.rider@example.com', name: 'Itzel Rider');
+    const metrics = DashboardMetrics(
+      bankName: 'Banco Uno',
+      bankAccount: '**** 1234',
+      completedRidesThisWeek: 24,
+      cancelledRidesThisWeek: 1,
+      weeklyEarnings: 1520.50,
+      monthlyEarnings: 6400.75,
+      evaluationScore: 4.8,
+      acceptanceRate: 97,
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          signedInRiderProvider.overrideWith((ref) => StateController<RiderAccount?>(rider)),
+          dashboardMetricsProvider.overrideWith((ref) => Future.value(metrics)),
+          dashboardCurrentTripProvider.overrideWith((ref) => Future.value(null)),
+        ],
+        child: const MaterialApp(home: DashboardScreen()),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    //7.- Corroboramos que el resumen refleje la indisponibilidad del botón.
+    expect(find.text('Sin viaje aceptado'), findsOneWidget);
+    final panicButton = tester.widget<FilledButton>(
+      find.widgetWithText(FilledButton, 'Alerta').first,
+    );
+    expect(panicButton.onPressed, isNull);
   });
 }
