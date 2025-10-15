@@ -26,6 +26,7 @@ dependencies:
   uuid: ^4.5.1
   # //6.- Habilita el sistema de diseño shadcn para alinear tarjetas y botones personalizados.
   shadcn_flutter: ^0.0.44
+  crypto: ^3.0.3
 
 dev_dependencies:
   flutter_test:
