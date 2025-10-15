@@ -8,8 +8,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart' as shad;
 import 'package:test/fake.dart';
 
-import 'package:mictlan_client/theme/shad_theme_builder.dart';
-import 'package:mictlan_client/widgets/report_type_overlay.dart';
+import 'package:ubberapp/theme/shad_theme_builder.dart';
+import 'package:ubberapp/widgets/report_type_overlay.dart';
 
 void main() {
   //1.- Agrupamos los tests de la lógica de assets para asegurar rutas correctas.

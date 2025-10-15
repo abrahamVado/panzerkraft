@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 
-import 'package:mictlan_client/services/session_service.dart';
-import 'package:mictlan_client/widgets/otp_auth_sheet.dart';
+import 'package:ubberapp/services/session_service.dart';
+import 'package:ubberapp/widgets/otp_auth_sheet.dart';
 
 class _FakeHttpClient extends http.BaseClient {
   @override

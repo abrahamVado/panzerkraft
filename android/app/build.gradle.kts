@@ -28,8 +28,8 @@ val mapsApiKey: String by lazy {
 }
 
 android {
-    //1.- Mantiene el namespace original de la aplicación alineado con el AndroidManifest.
-    namespace = "com.example.mictlan_client"
+    //1.- Mantiene el namespace original de la aplicación alineado con el AndroidManifest renombrado.
+    namespace = "com.example.ubberapp"
     //2.- Sincroniza compileSdk y ndk con los valores resueltos por Flutter.
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
@@ -46,8 +46,8 @@ android {
     }
 
     defaultConfig {
-        //5.- Conserva el applicationId del proyecto xolotl mientras reutiliza la estructura de referencia.
-        applicationId = "com.example.mictlan_client"
+        //5.- Conserva el nuevo applicationId renombrado para evitar colisiones con la app previa.
+        applicationId = "com.example.ubberapp"
         //6.- Replica la obtención dinámica de versionado administrado por Flutter.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion

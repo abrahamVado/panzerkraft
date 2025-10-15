@@ -1,5 +1,5 @@
-name: mictlan_client
-description: Client prototype for reporting and consulting incidents against the Mictlan Go backend.
+name: ubberapp
+description: Client prototype for reporting and consulting incidents against the Ubberapp backend.
 publish_to: "none"
 version: 0.1.0+1
 

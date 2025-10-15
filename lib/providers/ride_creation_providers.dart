@@ -166,6 +166,19 @@ class RouteSelectionController extends StateNotifier<RideRouteState> {
     await _maybeFetchRoutes();
   }
 
+  //18.1.- selectOriginFromMap crea un waypoint directo tomando la coordenada elegida en el mapa.
+  Future<void> selectOriginFromMap(LatLng position) async {
+    final waypoint = _createMapWaypoint(position, isOrigin: true);
+    state = state.copyWith(
+      origin: waypoint,
+      originSuggestions: const [],
+      clearSelectedRoute: true,
+      routes: const [],
+      clearError: true,
+    );
+    await _maybeFetchRoutes();
+  }
+
   //18.- selectDestination actúa igual pero para el punto de llegada.
   Future<void> selectDestination(PlaceSuggestion suggestion) async {
     final waypoint = await _places.resolveSuggestion(suggestion);
@@ -175,6 +188,19 @@ class RouteSelectionController extends StateNotifier<RideRouteState> {
       );
       return;
     }
+    state = state.copyWith(
+      destination: waypoint,
+      destinationSuggestions: const [],
+      clearSelectedRoute: true,
+      routes: const [],
+      clearError: true,
+    );
+    await _maybeFetchRoutes();
+  }
+
+  //18.2.- selectDestinationFromMap replica el flujo anterior pero con coordenadas sin Place ID.
+  Future<void> selectDestinationFromMap(LatLng position) async {
+    final waypoint = _createMapWaypoint(position, isOrigin: false);
     state = state.copyWith(
       destination: waypoint,
       destinationSuggestions: const [],
@@ -236,6 +262,19 @@ class RouteSelectionController extends StateNotifier<RideRouteState> {
         errorMessage: 'Unable to load routes for the selected points.',
       );
     }
+  }
+
+  //22.1.- _createMapWaypoint genera una descripción textual para selecciones hechas sobre el mapa.
+  RideWaypoint _createMapWaypoint(LatLng position, {required bool isOrigin}) {
+    final label = isOrigin ? 'Origen seleccionado' : 'Destino seleccionado';
+    final coordinates =
+        '(${position.latitude.toStringAsFixed(5)}, ${position.longitude.toStringAsFixed(5)})';
+    final idPrefix = isOrigin ? 'origin' : 'destination';
+    return RideWaypoint(
+      placeId: 'map_$idPrefix_${position.latitude}_${position.longitude}',
+      description: '$label $coordinates',
+      location: position,
+    );
   }
 }
 

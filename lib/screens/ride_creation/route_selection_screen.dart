@@ -18,6 +18,9 @@ const routeSelectionDestinationFieldKey = Key(
 const routeSelectionStartButtonKey = Key('route_selection_start_button');
 const routeSelectionMapKey = Key('route_selection_map');
 
+//3.1.- _ActiveRouteField identifica el campo actualmente interactivo para rellenar con el mapa.
+enum _ActiveRouteField { origin, destination }
+
 //2.- RouteSelectionScreen gestiona el formulario previo a lanzar la subasta de viaje.
 class RouteSelectionScreen extends ConsumerStatefulWidget {
   //3.- mapBuilder permite inyectar un mapa simulado durante pruebas de widgets.
@@ -25,6 +28,7 @@ class RouteSelectionScreen extends ConsumerStatefulWidget {
     BuildContext context,
     Set<Marker> markers,
     Set<Polyline> polylines,
+    void Function(LatLng position) onTap,
   )?
   mapBuilder;
 
@@ -40,8 +44,11 @@ class _RouteSelectionScreenState extends ConsumerState<RouteSelectionScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _originController = TextEditingController();
   final TextEditingController _destinationController = TextEditingController();
+  late final FocusNode _originFocusNode;
+  late final FocusNode _destinationFocusNode;
   Timer? _originDebounce;
   Timer? _destinationDebounce;
+  _ActiveRouteField _activeField = _ActiveRouteField.origin;
 
   @override
   void initState() {
@@ -66,6 +73,15 @@ class _RouteSelectionScreenState extends ConsumerState<RouteSelectionScreen> {
         }
       },
     );
+    _originFocusNode = FocusNode();
+    _destinationFocusNode = FocusNode();
+    _originFocusNode.addListener(_onOriginFocusChanged);
+    _destinationFocusNode.addListener(_onDestinationFocusChanged);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _originFocusNode.requestFocus();
+      }
+    });
   }
 
   @override
@@ -75,6 +91,10 @@ class _RouteSelectionScreenState extends ConsumerState<RouteSelectionScreen> {
     _destinationDebounce?.cancel();
     _originController.dispose();
     _destinationController.dispose();
+    _originFocusNode.removeListener(_onOriginFocusChanged);
+    _destinationFocusNode.removeListener(_onDestinationFocusChanged);
+    _originFocusNode.dispose();
+    _destinationFocusNode.dispose();
     _subscription.close();
     super.dispose();
   }
@@ -97,6 +117,18 @@ class _RouteSelectionScreenState extends ConsumerState<RouteSelectionScreen> {
     });
   }
 
+  void _onOriginFocusChanged() {
+    if (_originFocusNode.hasFocus) {
+      setState(() => _activeField = _ActiveRouteField.origin);
+    }
+  }
+
+  void _onDestinationFocusChanged() {
+    if (_destinationFocusNode.hasFocus) {
+      setState(() => _activeField = _ActiveRouteField.destination);
+    }
+  }
+
   void _selectOrigin(PlaceSuggestion suggestion) {
     //8.- Al tocar una sugerencia fijamos el valor y lanzamos la resolución de coordenadas.
     ref
@@ -111,6 +143,22 @@ class _RouteSelectionScreenState extends ConsumerState<RouteSelectionScreen> {
         .read(routeSelectionControllerProvider.notifier)
         .selectDestination(suggestion);
     FocusScope.of(context).unfocus();
+  }
+
+  void _handleMapTap(LatLng position) {
+    //9.1.- _handleMapTap asigna el punto tocado según el campo activo o disponible.
+    final notifier = ref.read(routeSelectionControllerProvider.notifier);
+    switch (_activeField) {
+      case _ActiveRouteField.origin:
+        notifier.selectOriginFromMap(position);
+        _destinationFocusNode.requestFocus();
+        setState(() => _activeField = _ActiveRouteField.destination);
+        break;
+      case _ActiveRouteField.destination:
+        notifier.selectDestinationFromMap(position);
+        FocusScope.of(context).unfocus();
+        break;
+    }
   }
 
   void _startAuction() {
@@ -205,7 +253,7 @@ class _RouteSelectionScreenState extends ConsumerState<RouteSelectionScreen> {
   Widget _buildMap(Set<Marker> markers, Set<Polyline> polylines) {
     //14.- Permitimos reemplazar el mapa real por un contenedor simulado en pruebas.
     if (widget.mapBuilder != null) {
-      return widget.mapBuilder!(context, markers, polylines);
+      return widget.mapBuilder!(context, markers, polylines, _handleMapTap);
     }
     return GoogleMap(
       key: routeSelectionMapKey,
@@ -217,6 +265,7 @@ class _RouteSelectionScreenState extends ConsumerState<RouteSelectionScreen> {
       polylines: polylines,
       myLocationButtonEnabled: false,
       zoomControlsEnabled: false,
+      onTap: _handleMapTap,
     );
   }
 
@@ -241,6 +290,7 @@ class _RouteSelectionScreenState extends ConsumerState<RouteSelectionScreen> {
                 TextFormField(
                   key: routeSelectionOriginFieldKey,
                   controller: _originController,
+                  focusNode: _originFocusNode,
                   decoration: InputDecoration(
                     labelText: 'Origin',
                     suffixIcon: IconButton(
@@ -267,6 +317,7 @@ class _RouteSelectionScreenState extends ConsumerState<RouteSelectionScreen> {
                 TextFormField(
                   key: routeSelectionDestinationFieldKey,
                   controller: _destinationController,
+                  focusNode: _destinationFocusNode,
                   decoration: InputDecoration(
                     labelText: 'Destination',
                     suffixIcon: IconButton(
@@ -291,6 +342,11 @@ class _RouteSelectionScreenState extends ConsumerState<RouteSelectionScreen> {
                 _buildSuggestionList(
                   state.destinationSuggestions,
                   _selectDestination,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Consejo: toca el mapa mientras el campo deseado esté enfocado para rellenarlo automáticamente.',
+                  style: theme.textTheme.bodySmall,
                 ),
                 const SizedBox(height: 16),
                 Expanded(

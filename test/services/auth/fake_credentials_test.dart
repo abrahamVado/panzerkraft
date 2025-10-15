@@ -1,6 +1,6 @@
 import 'package:test/test.dart';
 
-import 'package:mictlan_client/services/auth/fake_credentials.dart';
+import 'package:ubberapp/services/auth/fake_credentials.dart';
 
 void main() {
   group('FakeCredentialStore', () {

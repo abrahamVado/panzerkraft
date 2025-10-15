@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../services/auth/fake_credentials.dart';
@@ -70,6 +72,10 @@ final signedInRiderProvider = StateProvider<RiderAccount?>((ref) {
 
 //7.- LoginController coordina validaciones y el flujo de autenticación.
 class LoginController extends AutoDisposeNotifier<LoginFormState> {
+  LoginController() : _random = Random();
+
+  final Random _random;
+
   @override
   LoginFormState build() {
     return LoginFormState.initial();
@@ -142,6 +148,16 @@ class LoginController extends AutoDisposeNotifier<LoginFormState> {
       return 'Rider Demo';
     }
     return segments.join(' ');
+  }
+
+  //14.- signInAsDemo genera credenciales aleatorias y reutiliza el flujo estándar.
+  Future<void> signInAsDemo() async {
+    final suffix = _random.nextInt(9000) + 1000;
+    final email = 'demo$suffix@ubberapp.local';
+    final password = 'pass$suffix';
+    updateEmail(email);
+    updatePassword(password);
+    await submit();
   }
 }
 

@@ -4,10 +4,10 @@ import 'dart:math';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:mictlan_client/models/auction/auction_bid.dart';
-import 'package:mictlan_client/providers/auction/auction_controller.dart';
-import 'package:mictlan_client/providers/auction/auction_state.dart';
-import 'package:mictlan_client/services/auction/bid_generator.dart';
+import 'package:ubberapp/models/auction/auction_bid.dart';
+import 'package:ubberapp/providers/auction/auction_controller.dart';
+import 'package:ubberapp/providers/auction/auction_state.dart';
+import 'package:ubberapp/services/auction/bid_generator.dart';
 
 //1.- _FixedBidGenerator asegura resultados deterministas para las pruebas.
 class _FixedBidGenerator extends BidGenerator {

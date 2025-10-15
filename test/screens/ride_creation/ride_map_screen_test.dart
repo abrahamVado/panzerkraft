@@ -4,9 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
 
-import 'package:mictlan_client/providers/ride_creation_providers.dart';
-import 'package:mictlan_client/screens/ride_creation/ride_map_screen.dart';
-import 'package:mictlan_client/services/location/ride_location_service.dart';
+import 'package:ubberapp/providers/ride_creation_providers.dart';
+import 'package:ubberapp/screens/ride_creation/ride_map_screen.dart';
+import 'package:ubberapp/services/location/ride_location_service.dart';
 
 class _FakeGoogleMapsFlutterPlatform extends FakeGoogleMapsFlutterPlatform {}
 

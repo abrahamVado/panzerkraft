@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 //1.- GoogleMapsAvailability centraliza la verificación del API key nativo.
 class GoogleMapsAvailability {
   //2.- _channel define el canal de comunicación con el código Android.
-  static const MethodChannel _channel = MethodChannel('com.example.mictlan_client/config');
+  static const MethodChannel _channel = MethodChannel('com.example.ubberapp/config');
 
   //3.- _shared mantiene la instancia reutilizada en toda la aplicación.
   static GoogleMapsAvailability _shared = GoogleMapsAvailability._(_defaultResolver);

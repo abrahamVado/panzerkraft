@@ -1,12 +1,12 @@
 <!-- //1.- Manifest principal que declara permisos, activity y metadata de la app Flutter. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.mictlan_client">
+    package="com.example.ubberapp">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <!-- //2.- Habilita el callback moderno de regreso para evitar advertencias en Android 13+. -->
     <application
-        android:label="mictlan_client"
+        android:label="Ubberapp"
         android:name="${applicationName}"
         android:icon="@drawable/ic_launcher"
         android:roundIcon="@drawable/ic_launcher_round"
