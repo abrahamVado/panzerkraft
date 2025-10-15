@@ -103,7 +103,8 @@ class _RouteSelectionScreenState extends ConsumerState<RouteSelectionScreen> {
     _destinationFocusNode.dispose();
     final controller = _mapController;
     if (controller != null) {
-      unawaited(controller.dispose());
+      //5.1.- GoogleMapController.dispose es sincrónico en la versión actual del plugin.
+      controller.dispose();
     }
     _subscription.close();
     super.dispose();

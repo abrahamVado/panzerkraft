@@ -146,6 +146,26 @@ Widget _buildTestableScreen({
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  test('map location error message matches RideLocationStatus cases', () {
+    //1.- Verificamos que cada estado se traduzca al texto mostrado en SnackBar.
+    expect(
+      _mapLocationErrorMessage(RideLocationStatus.permissionsDenied),
+      'We need location permissions to use your current position.',
+    );
+    expect(
+      _mapLocationErrorMessage(RideLocationStatus.servicesDisabled),
+      'Enable GPS services to use your current location.',
+    );
+    expect(
+      _mapLocationErrorMessage(RideLocationStatus.failure),
+      'We could not determine your current location.',
+    );
+    expect(
+      _mapLocationErrorMessage(RideLocationStatus.success),
+      'Location resolved successfully.',
+    );
+  });
+
   testWidgets('form validation surfaces errors when fields are empty',
       (tester) async {
     final container = _createContainer();
