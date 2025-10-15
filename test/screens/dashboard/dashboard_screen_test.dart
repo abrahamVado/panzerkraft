@@ -8,49 +8,55 @@ import 'package:ubberapp/services/auth/fake_credentials.dart';
 import 'package:ubberapp/services/dashboard/dashboard_current_trip_service.dart';
 import 'package:ubberapp/services/dashboard/dashboard_metrics_service.dart';
 
+const _testRider = RiderAccount(email: 'itzel.rider@example.com', name: 'Itzel Rider');
+const _testMetrics = DashboardMetrics(
+  bankName: 'Banco Uno',
+  bankAccount: '**** 1234',
+  completedRidesThisWeek: 24,
+  cancelledRidesThisWeek: 1,
+  weeklyEarnings: 1520.50,
+  monthlyEarnings: 6400.75,
+  evaluationScore: 4.8,
+  acceptanceRate: 97,
+);
+const _testCurrentTrip = DashboardCurrentTrip(
+  passengerName: 'Luz Marina',
+  pickupAddress: 'Calle 5 #123',
+  dropoffAddress: 'Aeropuerto T1',
+  status: 'En curso',
+  vehiclePlate: 'TAX-456',
+  etaMinutes: 8,
+  amount: 180.50,
+  durationMinutes: 22,
+  distanceKm: 11.5,
+  vehicleModel: 'Sedán Confort',
+  driverName: 'Conductor Rider',
+  driverRating: 4.9,
+  driverExperienceYears: 6,
+  driverPhone: '+52 55 5555 0000',
+);
+
+Widget _buildDashboardTestApp({
+  DashboardCurrentTrip? currentTrip = _testCurrentTrip,
+  DashboardMetrics metrics = _testMetrics,
+}) {
+  return ProviderScope(
+    overrides: [
+      signedInRiderProvider
+          .overrideWith((ref) => StateController<RiderAccount?>(_testRider)),
+      dashboardMetricsProvider.overrideWith((ref) => Future.value(metrics)),
+      dashboardCurrentTripProvider.overrideWith((ref) => Future.value(currentTrip)),
+    ],
+    child: const MaterialApp(home: DashboardScreen()),
+  );
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets('muestra datos del tablero y habilita el CTA', (tester) async {
-    //1.- Definimos datos deterministas para reemplazar los servicios en el árbol de pruebas.
-    const rider = RiderAccount(email: 'itzel.rider@example.com', name: 'Itzel Rider');
-    const metrics = DashboardMetrics(
-      bankName: 'Banco Uno',
-      bankAccount: '**** 1234',
-      completedRidesThisWeek: 24,
-      cancelledRidesThisWeek: 1,
-      weeklyEarnings: 1520.50,
-      monthlyEarnings: 6400.75,
-      evaluationScore: 4.8,
-      acceptanceRate: 97,
-    );
-    const currentTrip = DashboardCurrentTrip(
-      passengerName: 'Luz Marina',
-      pickupAddress: 'Calle 5 #123',
-      dropoffAddress: 'Aeropuerto T1',
-      status: 'En curso',
-      vehiclePlate: 'TAX-456',
-      etaMinutes: 8,
-      amount: 180.50,
-      durationMinutes: 22,
-      distanceKm: 11.5,
-      vehicleModel: 'Sedán Confort',
-      driverName: 'Conductor Rider',
-      driverRating: 4.9,
-      driverExperienceYears: 6,
-      driverPhone: '+52 55 5555 0000',
-    );
-
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          signedInRiderProvider.overrideWith((ref) => StateController<RiderAccount?>(rider)),
-          dashboardMetricsProvider.overrideWith((ref) => Future.value(metrics)),
-          dashboardCurrentTripProvider.overrideWith((ref) => Future.value(currentTrip)),
-        ],
-        child: const MaterialApp(home: DashboardScreen()),
-      ),
-    );
+    //1.- Preparamos el árbol de pruebas con proveedores deterministas.
+    await tester.pumpWidget(_buildDashboardTestApp());
 
     await tester.pumpAndSettle();
 
@@ -97,33 +103,41 @@ void main() {
     expect(panicButton.onPressed, isNotNull);
   });
 
-  testWidgets('deshabilita el botón de pánico sin viaje aceptado', (tester) async {
-    const rider = RiderAccount(email: 'itzel.rider@example.com', name: 'Itzel Rider');
-    const metrics = DashboardMetrics(
-      bankName: 'Banco Uno',
-      bankAccount: '**** 1234',
-      completedRidesThisWeek: 24,
-      cancelledRidesThisWeek: 1,
-      weeklyEarnings: 1520.50,
-      monthlyEarnings: 6400.75,
-      evaluationScore: 4.8,
-      acceptanceRate: 97,
-    );
+  testWidgets('ajusta la cuadrícula de estadísticas rápidas según el ancho',
+      (tester) async {
+    //8.- Configuramos dimensiones compactas para simular un layout estrecho.
+    tester.binding.window.physicalSizeTestValue = const Size(600, 1200);
+    tester.binding.window.devicePixelRatioTestValue = 1.0;
+    addTearDown(() {
+      tester.binding.window.clearPhysicalSizeTestValue();
+      tester.binding.window.clearDevicePixelRatioTestValue();
+    });
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          signedInRiderProvider.overrideWith((ref) => StateController<RiderAccount?>(rider)),
-          dashboardMetricsProvider.overrideWith((ref) => Future.value(metrics)),
-          dashboardCurrentTripProvider.overrideWith((ref) => Future.value(null)),
-        ],
-        child: const MaterialApp(home: DashboardScreen()),
-      ),
-    );
+    //9.- Renderizamos el Dashboard y validamos que la malla se mantenga en dos columnas.
+    await tester.pumpWidget(_buildDashboardTestApp());
+    await tester.pumpAndSettle();
+
+    var grid = tester.widget<GridView>(find.byType(GridView).first);
+    var delegate = grid.gridDelegate as SliverGridDelegateWithFixedCrossAxisCount;
+    expect(delegate.crossAxisCount, 2);
+
+    //10.- Ampliamos el ancho disponible para forzar la transición a tres columnas.
+    tester.binding.window.physicalSizeTestValue = const Size(1200, 1200);
+    await tester.pumpWidget(_buildDashboardTestApp());
+    await tester.pumpAndSettle();
+
+    grid = tester.widget<GridView>(find.byType(GridView).first);
+    delegate = grid.gridDelegate as SliverGridDelegateWithFixedCrossAxisCount;
+    expect(delegate.crossAxisCount, 3);
+  });
+
+  testWidgets('deshabilita el botón de pánico sin viaje aceptado', (tester) async {
+    //11.- Mostramos el Dashboard sin viaje activo para comprobar el estado del botón.
+    await tester.pumpWidget(_buildDashboardTestApp(currentTrip: null));
 
     await tester.pumpAndSettle();
 
-    //8.- Corroboramos que el resumen refleje la indisponibilidad del botón.
+    //12.- Corroboramos que el resumen refleje la indisponibilidad del botón.
     expect(find.text('Sin viaje aceptado'), findsOneWidget);
     final panicButton = tester.widget<FilledButton>(
       find.widgetWithText(FilledButton, 'Alerta').first,
