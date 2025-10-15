@@ -6,7 +6,8 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <!-- //2.- Habilita el callback moderno de regreso para evitar advertencias en Android 13+. -->
     <application
-        android:label="Ubberapp"
+        <!-- //3.- Define el nombre mostrado en el lanzador de Android para que los usuarios vean "Red TOSUR" bajo el ícono. -->
+        android:label="Red TOSUR"
         android:name="${applicationName}"
         android:icon="@drawable/ic_launcher"
         android:roundIcon="@drawable/ic_launcher_round"
