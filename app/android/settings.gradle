@@ -18,8 +18,8 @@ pluginManagement {
 
     plugins {
         id "dev.flutter.flutter-gradle-plugin" version "1.0.0" apply false
-        //1.- Align the Kotlin plugin with AGP 7.4.2 so it keeps using the legacy variant API that depends on BaseVariant.
-        id "org.jetbrains.kotlin.android" version "1.9.24" apply false
+        //1.- Match the Kotlin plugin to 2.0.21 so it stays in lockstep with the AGP 8.7.2 toolchain requirements.
+        id "org.jetbrains.kotlin.android" version "2.0.21" apply false
     }
 }
 

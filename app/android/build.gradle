@@ -1,7 +1,7 @@
 plugins {
-    //1.- Pin the Android Gradle plugin to 7.4.2 so the legacy BaseVariant APIs remain available for the Kotlin tooling.
-    id "com.android.application" version "7.4.2" apply false
-    //2.- Defer the Kotlin Android plugin version resolution to settings.gradle where it matches the AGP 7.x toolchain.
+    //1.- Bump the Android Gradle plugin to 8.7.2 so it remains compatible with the upgraded Gradle 8.7 toolchain.
+    id "com.android.application" version "8.7.2" apply false
+    //2.- Let the Kotlin Android plugin version resolve from settings.gradle where it is aligned with AGP 8.7.
     id "org.jetbrains.kotlin.android" apply false
 }
 
