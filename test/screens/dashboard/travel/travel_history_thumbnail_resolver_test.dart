@@ -65,5 +65,24 @@ void main() {
       expect(travelHistoryVehicleThumbnails, contains(secondAsset));
       expect(firstAsset, isNot(equals(secondAsset)));
     });
+
+    test('ignora rutas vacías y conserva el fallback cuando es necesario', () {
+      //4.- Preparamos un resolver con rutas vacías para verificar que se ignore ruido.
+      const resolver = TravelHistoryThumbnailResolver(
+        vehicleAssets: ['   ', '', travelHistoryThumbnailAsset],
+      );
+      const entry = TravelHistoryEntry(
+        date: DateTime(2024, 8, 21),
+        origin: 'Centro',
+        destination: 'Sur',
+        fare: 50,
+        distanceKm: 3.4,
+        durationMinutes: 9,
+      );
+
+      final asset = resolver.assetForEntry(entry);
+
+      expect(asset, travelHistoryThumbnailAsset);
+    });
   });
 }
