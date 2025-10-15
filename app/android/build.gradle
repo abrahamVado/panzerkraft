@@ -1,8 +1,8 @@
 plugins {
     //1.- Provide the Android Gradle plugin release that supports Gradle 8.6 and Java 21 toolchains.
     id "com.android.application" version "8.3.2" apply false
-    //2.- Provide the Kotlin Android plugin aligned with the selected Android Gradle plugin.
-    id "org.jetbrains.kotlin.android" version "1.9.22" apply false
+    //2.- Use the Kotlin Android plugin already supplied by the Flutter Gradle integration to avoid duplicate classpath resolution.
+    id "org.jetbrains.kotlin.android" apply false
 }
 
 allprojects {
