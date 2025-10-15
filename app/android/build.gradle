@@ -1,13 +1,13 @@
 buildscript {
-    //1.- Align Kotlin tooling with the Android Gradle Plugin 8 APIs.
-    ext.kotlin_version = '1.9.24'
+    //1.- Align Kotlin tooling with the Android Gradle Plugin 7 APIs that remain compatible with the Flutter tooling in this repo.
+    ext.kotlin_version = '1.9.22'
     repositories {
         google()
         mavenCentral()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.1.4'
+        classpath 'com.android.tools.build:gradle:7.4.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
