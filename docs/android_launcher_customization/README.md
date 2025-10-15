@@ -11,3 +11,8 @@
 3. Si trabajas con múltiples densidades, crea carpetas `mipmap-hdpi`, `mipmap-mdpi`, `mipmap-xhdpi`, `mipmap-xxhdpi` y `mipmap-xxxhdpi`, coloca los PNG correspondientes y actualiza el atributo `android:icon` a `@mipmap/ic_launcher` y `android:roundIcon` a `@mipmap/ic_launcher_round` en el manifiesto.
 4. Alternativamente, agrega la dependencia `flutter_launcher_icons` a tu `pubspec.yaml` y ejecuta `flutter pub run flutter_launcher_icons` para generar todos los recursos automáticamente.
 5. Limpia y vuelve a compilar tu aplicación (`flutter clean && flutter run`) para asegurarte de que los cambios de ícono se apliquen correctamente en los dispositivos Android.
+
+## Agrandar el logo dentro del ícono adaptive
+1. Abre `android/app/src/main/res/drawable/ic_launcher_foreground.xml`.
+2. Modifica el atributo `android:pathData` para que la figura aproveche mejor los 108dp del `viewport`. Por ejemplo, un anillo con `M54,10a44,44 ... zm0,12a32,32 ...` deja solo 10dp de margen en cada lado y se percibe más grande en el dispositivo.
+3. Guarda el archivo y vuelve a compilar la app. Al tratarse de un recurso vectorial no necesitas regenerar PNGs para cada densidad.
