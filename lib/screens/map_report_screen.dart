@@ -1,5 +1,6 @@
 
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -65,6 +66,8 @@ class _MapReportScreenState extends ConsumerState<MapReportScreen> {
   bool _locatingUser = false;
   //12.1.- _autoCenteredOnIntro evita repetir el centrado automático inicial.
   bool _autoCenteredOnIntro = false;
+  //12.2.- _mapDisposer conserva la rutina de limpieza del GoogleMapController.
+  Future<void> Function()? _mapDisposer;
 
   //13.- _api expone la dependencia inyectable o recurre al singleton global.
   ApiService get _api => widget.api ?? apiService;
@@ -79,6 +82,17 @@ class _MapReportScreenState extends ConsumerState<MapReportScreen> {
   void initState() {
     super.initState();
     _initialize();
+  }
+
+  @override
+  void dispose() {
+    //12.3.- dispose ejecuta la limpieza asincrónica del controlador si existe.
+    final disposer = _mapDisposer;
+    _mapDisposer = null;
+    if (disposer != null) {
+      unawaited(disposer());
+    }
+    super.dispose();
   }
 
   //17.- _initialize sincroniza la disponibilidad del mapa y los tipos de reporte.
@@ -194,7 +208,14 @@ class _MapReportScreenState extends ConsumerState<MapReportScreen> {
     if (!_controller.isCompleted) {
       _controller.complete(controller);
     }
+    _registerMapDisposer(() => Future<void>.sync(controller.dispose));
     _attemptInitialAutoCenter();
+  }
+
+  //20.1.1.- _registerMapDisposer facilita las pruebas al inyectar un callback.
+  @visibleForTesting
+  void _registerMapDisposer(Future<void> Function() disposer) {
+    _mapDisposer = disposer;
   }
 
   //20.2.- _attemptInitialAutoCenter lanza el flujo para ubicar a la persona usuaria.
