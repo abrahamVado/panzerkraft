@@ -7,7 +7,7 @@ void main() {
   //1.- Grupo de pruebas para garantizar la selección consistente de miniaturas.
   group('TravelHistoryThumbnailResolver', () {
     test('elige determinísticamente una imagen entre las disponibles', () {
-      const resolver = TravelHistoryThumbnailResolver();
+      final resolver = TravelHistoryThumbnailResolver();
       const entry = TravelHistoryEntry(
         date: DateTime(2024, 7, 10),
         origin: 'Origen Central',
@@ -24,7 +24,7 @@ void main() {
     });
 
     test('usa el recurso por defecto si no hay imágenes personalizadas', () {
-      const resolver = TravelHistoryThumbnailResolver(vehicleAssets: []);
+      final resolver = TravelHistoryThumbnailResolver(vehicleAssets: []);
       const entry = TravelHistoryEntry(
         date: DateTime(2024, 1, 5),
         origin: 'Base',
@@ -40,7 +40,7 @@ void main() {
     });
 
     test('diferentes viajes pueden mapear a imágenes distintas', () {
-      const resolver = TravelHistoryThumbnailResolver();
+      final resolver = TravelHistoryThumbnailResolver();
       const firstEntry = TravelHistoryEntry(
         date: DateTime(2024, 5, 2),
         origin: 'Centro',
@@ -68,7 +68,7 @@ void main() {
 
     test('ignora rutas vacías y conserva el fallback cuando es necesario', () {
       //4.- Preparamos un resolver con rutas vacías para verificar que se ignore ruido.
-      const resolver = TravelHistoryThumbnailResolver(
+      final resolver = TravelHistoryThumbnailResolver(
         vehicleAssets: ['   ', '', travelHistoryThumbnailAsset],
       );
       const entry = TravelHistoryEntry(
