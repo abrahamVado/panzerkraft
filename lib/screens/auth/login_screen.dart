@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../config/branding_config.dart';
 import '../../providers/auth_providers.dart';
 import '../../services/auth/fake_credentials.dart';
 
@@ -25,6 +26,7 @@ class LoginScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                const _BrandingPreview(),
                 Text(
                   'Ahora puedes entrar de inmediato con un usuario demo. La aplicación generará credenciales por ti.',
                   style: theme.textTheme.bodyMedium,
@@ -99,6 +101,139 @@ class LoginScreen extends ConsumerWidget {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+//1.1.- _BrandingPreview presenta los recursos configurables antes del formulario.
+class _BrandingPreview extends StatelessWidget {
+  const _BrandingPreview();
+
+  static const double _imageHeight = 84;
+
+  @override
+  Widget build(BuildContext context) {
+    //1.- build arma la sección de logos solo cuando existen rutas configuradas.
+    final entries = <(String, String)>[
+      (BrandingConfig.appLogoSource, 'Logotipo de la aplicación'),
+      (BrandingConfig.androidIconSource, 'Ícono para Android'),
+    ]
+        .where((entry) => entry.$1.trim().isNotEmpty)
+        .toList(growable: false);
+    if (entries.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 16,
+          runSpacing: 16,
+          children: [
+            for (final entry in entries)
+              _BrandingImageTile(
+                source: entry.$1,
+                label: entry.$2,
+                height: _imageHeight,
+              ),
+          ],
+        ),
+        const SizedBox(height: 24),
+      ],
+    );
+  }
+}
+
+//1.2.- _BrandingImageTile decide entre assets locales e imágenes remotas con fallback.
+class _BrandingImageTile extends StatelessWidget {
+  const _BrandingImageTile({
+    required this.source,
+    required this.label,
+    required this.height,
+  });
+
+  final String source;
+  final String label;
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    //1.- build dibuja un recuadro con la imagen y etiqueta descriptiva.
+    final theme = Theme.of(context);
+    final borderColor = theme.colorScheme.outlineVariant;
+    final textStyle = theme.textTheme.labelMedium;
+    final imageWidget = BrandingConfig.isRemoteSource(source)
+        ? Image.network(
+            source,
+            height: height,
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) => _BrandingImagePlaceholder(label: label),
+          )
+        : Image.asset(
+            source,
+            height: height,
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) => _BrandingImagePlaceholder(label: label),
+          );
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            border: Border.all(color: borderColor),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Semantics(
+            label: label,
+            image: true,
+            child: SizedBox(
+              height: height,
+              width: height,
+              child: FittedBox(
+                fit: BoxFit.contain,
+                child: imageWidget,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(label, style: textStyle, textAlign: TextAlign.center),
+      ],
+    );
+  }
+}
+
+//1.3.- _BrandingImagePlaceholder asegura un estado visual consistente ante errores.
+class _BrandingImagePlaceholder extends StatelessWidget {
+  const _BrandingImagePlaceholder({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceVariant,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.photo_outlined, color: theme.colorScheme.onSurfaceVariant),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: theme.textTheme.bodySmall,
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       ),
     );

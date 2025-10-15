@@ -1,27 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../config/branding_config.dart';
 import '../../../providers/dashboard/travel_history_controller.dart';
 import '../../../services/dashboard/dashboard_travel_history_service.dart';
 
-//1.1.- travelHistoryThumbnailAsset indica el recurso por defecto para las tarjetas.
+//1.1.- travelHistoryThumbnailAsset referencia el recurso configurable por defecto.
 const travelHistoryThumbnailAsset =
-    'assets/images/travel_history/default_thumbnail.png';
+    BrandingConfig.travelHistoryFallbackSource;
 
-//1.2.- travelHistoryVehicleThumbnails agrupa las imágenes ilustrativas disponibles.
-const List<String> travelHistoryVehicleThumbnails = [
-  'assets/images/travel_history/vehicle_1.jpg',
-  'assets/images/travel_history/vehicle_2.jpg',
-  'assets/images/travel_history/vehicle_3.jpg',
-  'assets/images/travel_history/vehicle_4.jpg',
-  'assets/images/travel_history/vehicle_5.jpg',
-  'assets/images/travel_history/vehicle_6.jpg',
-];
+//1.2.- travelHistoryVehicleThumbnails reutiliza la galería definida en BrandingConfig.
+final List<String> travelHistoryVehicleThumbnails =
+    BrandingConfig.travelHistoryVehicleGallery();
 
-//1.2.- travelHistoryThumbnailKey permite ubicar la miniatura en pruebas de widgets.
+//1.3.- travelHistoryThumbnailKey permite ubicar la miniatura en pruebas de widgets.
 const travelHistoryThumbnailKey = Key('travel_history_thumbnail');
 
-//1.3.- TravelHistoryThumbnailResolver asigna una imagen determinística por viaje.
+//1.4.- TravelHistoryThumbnailResolver asigna una imagen determinística por viaje.
 class TravelHistoryThumbnailResolver {
   const TravelHistoryThumbnailResolver({
     this.vehicleAssets = travelHistoryVehicleThumbnails,
@@ -32,7 +27,11 @@ class TravelHistoryThumbnailResolver {
   final String fallbackAsset;
 
   String assetForEntry(TravelHistoryEntry entry) {
-    if (vehicleAssets.isEmpty) {
+    final sanitizedAssets = vehicleAssets
+        .map((asset) => asset.trim())
+        .where((asset) => asset.isNotEmpty)
+        .toList(growable: false);
+    if (sanitizedAssets.isEmpty) {
       return fallbackAsset;
     }
     final hash = Object.hash(
@@ -43,8 +42,9 @@ class TravelHistoryThumbnailResolver {
       entry.distanceKm,
       entry.fare,
     );
-    final index = hash.abs() % vehicleAssets.length;
-    return vehicleAssets[index];
+    final index = hash.abs() % sanitizedAssets.length;
+    final selected = sanitizedAssets[index];
+    return selected.isEmpty ? fallbackAsset : selected;
   }
 }
 
@@ -183,24 +183,45 @@ class _TravelHistoryThumbnail extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         child: AspectRatio(
           aspectRatio: 4 / 3,
-          child: Image.asset(
-            assetPath,
-            key: travelHistoryThumbnailKey,
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) {
-              return DecoratedBox(
-                decoration: BoxDecoration(
-                  color: colorScheme.surfaceVariant,
+          child: BrandingConfig.isRemoteSource(assetPath)
+              ? Image.network(
+                  assetPath,
+                  key: travelHistoryThumbnailKey,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return _ThumbnailFallback(colorScheme: colorScheme);
+                  },
+                )
+              : Image.asset(
+                  assetPath,
+                  key: travelHistoryThumbnailKey,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return _ThumbnailFallback(colorScheme: colorScheme);
+                  },
                 ),
-                child: Center(
-                  child: Icon(
-                    Icons.photo,
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              );
-            },
-          ),
+        ),
+      ),
+    );
+  }
+}
+
+//2.2.- _ThumbnailFallback centraliza el contenedor mostrado si la imagen falla.
+class _ThumbnailFallback extends StatelessWidget {
+  const _ThumbnailFallback({required this.colorScheme});
+
+  final ColorScheme colorScheme;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceVariant,
+      ),
+      child: Center(
+        child: Icon(
+          Icons.photo,
+          color: colorScheme.onSurfaceVariant,
         ),
       ),
     );
