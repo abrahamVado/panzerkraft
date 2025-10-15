@@ -14,7 +14,7 @@ Prototype app for citizens (clients) to:
 
 ## Setup
 1. **Flutter SDK**: 3.22+ recommended.
-2. **Google Maps keys**:
+2. **Google Maps keys** (see [`docs/taxi_demo/setup_guide`](docs/taxi_demo/setup_guide/README.md) for full walkthrough):
    - Android: define `MAPS_API_KEY` in `android/local.properties` or export it in your shell before running Gradle/Flutter. The
      client detecta en tiempo de ejecución si la clave falta y mostrará instrucciones en pantalla.
    - iOS: add to `ios/Runner/AppDelegate.swift` or `AppDelegate.m` following the plugin readme.
@@ -33,6 +33,9 @@ Prototype app for citizens (clients) to:
    dart run tool/gradle_lock_cleaner.dart
    ```
    The tool now auto-detects the standard Gradle cache path. Use `--lock` to point at a custom location if needed.
+7. **Taxi demo configuration**: the Maps keys, fake credential rotation, and mock service overrides are documented in detail in
+   [`docs/taxi_demo/setup_guide`](docs/taxi_demo/setup_guide/README.md). Keep that guide handy when onboarding new teammates or
+   adjusting CI variables.
 
 ## Endpoints expected
 - `GET /api/v1/catalog/incident-types`
