@@ -18,20 +18,53 @@ const travelHistoryThumbnailKey = Key('travel_history_thumbnail');
 
 //1.4.- TravelHistoryThumbnailResolver asigna una imagen determinística por viaje.
 class TravelHistoryThumbnailResolver {
-  const TravelHistoryThumbnailResolver({
-    this.vehicleAssets = travelHistoryVehicleThumbnails,
-    this.fallbackAsset = travelHistoryThumbnailAsset,
+  TravelHistoryThumbnailResolver({
+    List<String>? vehicleAssets,
+    String? fallbackAsset,
+  }) : this._internal(
+          vehicleAssets: _sanitizeAssets(
+            vehicleAssets ?? travelHistoryVehicleThumbnails,
+            fallbackAsset,
+          ),
+          fallbackAsset: _sanitizeFallback(fallbackAsset),
+        );
+
+  const TravelHistoryThumbnailResolver._internal({
+    required this.vehicleAssets,
+    required this.fallbackAsset,
   });
 
   final List<String> vehicleAssets;
   final String fallbackAsset;
 
+  static List<String> _sanitizeAssets(
+    List<String> candidateAssets,
+    String? fallbackAsset,
+  ) {
+    final sanitized = <String>[];
+    for (final asset in candidateAssets) {
+      final trimmed = asset.trim();
+      if (trimmed.isEmpty) {
+        continue;
+      }
+      sanitized.add(trimmed);
+    }
+    if (sanitized.isEmpty) {
+      sanitized.add(_sanitizeFallback(fallbackAsset));
+    }
+    return List.unmodifiable(sanitized);
+  }
+
+  static String _sanitizeFallback(String? fallbackAsset) {
+    final trimmed = fallbackAsset?.trim();
+    if (trimmed == null || trimmed.isEmpty) {
+      return travelHistoryThumbnailAsset;
+    }
+    return trimmed;
+  }
+
   String assetForEntry(TravelHistoryEntry entry) {
-    final sanitizedAssets = vehicleAssets
-        .map((asset) => asset.trim())
-        .where((asset) => asset.isNotEmpty)
-        .toList(growable: false);
-    if (sanitizedAssets.isEmpty) {
+    if (vehicleAssets.isEmpty) {
       return fallbackAsset;
     }
     final hash = Object.hash(
@@ -42,8 +75,8 @@ class TravelHistoryThumbnailResolver {
       entry.distanceKm,
       entry.fare,
     );
-    final index = hash.abs() % sanitizedAssets.length;
-    final selected = sanitizedAssets[index];
+    final index = hash.abs() % vehicleAssets.length;
+    final selected = vehicleAssets[index];
     return selected.isEmpty ? fallbackAsset : selected;
   }
 }
@@ -164,10 +197,15 @@ class _TravelHistoryTile extends StatelessWidget {
 
 //2.1.- _TravelHistoryThumbnail reserva espacio para la imagen ilustrativa del viaje.
 class _TravelHistoryThumbnail extends StatelessWidget {
-  const _TravelHistoryThumbnail({
+  //2.1.1.- _defaultResolver evita recrear instancias para cada elemento de lista.
+  static final TravelHistoryThumbnailResolver _defaultResolver =
+      TravelHistoryThumbnailResolver();
+
+  //2.1.2.- El constructor permite inyectar un resolver personalizado en pruebas.
+  _TravelHistoryThumbnail({
     required this.entry,
-    this.resolver = const TravelHistoryThumbnailResolver(),
-  });
+    TravelHistoryThumbnailResolver? resolver,
+  }) : resolver = resolver ?? _defaultResolver;
 
   static const double _thumbnailWidth = 120;
   final TravelHistoryEntry entry;
