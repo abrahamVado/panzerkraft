@@ -7,6 +7,7 @@ import 'config.dart';
 import 'providers/auth_providers.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/consult_screen.dart';
+import 'screens/dashboard/dashboard_screen.dart';
 import 'screens/map_report_screen.dart';
 import 'services/identity.dart';
 import 'theme/shad_theme_builder.dart';
@@ -193,6 +194,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int index = 0;
 
   final pages = const [
+    DashboardScreen(),
     MapReportScreen(),
     ConsultScreen(),
   ];
@@ -215,6 +217,7 @@ class _HomeScreenState extends State<HomeScreen> {
         selectedIndex: index,
         onDestinationSelected: (i) => setState(() => index = i),
         destinations: const [
+          NavigationDestination(icon: Icon(Icons.dashboard_outlined), label: 'Dashboard'),
           NavigationDestination(icon: Icon(Icons.map_outlined), label: 'Report'),
           NavigationDestination(icon: Icon(Icons.search), label: 'Consult'),
         ],
