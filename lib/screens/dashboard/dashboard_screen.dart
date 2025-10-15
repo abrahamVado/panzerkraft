@@ -30,7 +30,7 @@ class DashboardScreen extends ConsumerWidget {
           : metricsAsync.when(
               data: (metrics) {
                 final currentTripSection = currentTripAsync.when(
-                  data: (trip) => _buildCurrentTrip(trip),
+                  data: (trip) => _buildCurrentTrip(context, trip),
                   loading: () => const Text('Cargando viaje en curso...'),
                   error: (error, stackTrace) => const Text('No pudimos cargar tu viaje actual.'),
                 );
@@ -51,6 +51,8 @@ class DashboardScreen extends ConsumerWidget {
                           value: metrics.bankName,
                           background: colorScheme.primaryContainer,
                           foreground: colorScheme.onPrimaryContainer,
+                          actionLabel: 'Actualizar',
+                          onAction: () => context.pushNamed(AppRoute.bankInfo.name),
                         ),
                         _DashboardQuickStat(
                           icon: Icons.credit_card,
@@ -58,6 +60,8 @@ class DashboardScreen extends ConsumerWidget {
                           value: metrics.bankAccount,
                           background: colorScheme.secondaryContainer,
                           foreground: colorScheme.onSecondaryContainer,
+                          actionLabel: 'Configurar',
+                          onAction: () => context.pushNamed(AppRoute.bankInfo.name),
                         ),
                         _DashboardQuickStat(
                           icon: Icons.star_rate,
@@ -65,6 +69,8 @@ class DashboardScreen extends ConsumerWidget {
                           value: '${metrics.evaluationScore} / 5',
                           background: colorScheme.tertiaryContainer,
                           foreground: colorScheme.onTertiaryContainer,
+                          actionLabel: 'Ver opiniones',
+                          onAction: () => _showComingSoon(context, 'las opiniones detalladas'),
                         ),
                       ],
                     ),
@@ -72,6 +78,8 @@ class DashboardScreen extends ConsumerWidget {
                     _DashboardSection(
                       title: 'Rendimiento de la semana',
                       accentColor: colorScheme.primary,
+                      actionLabel: 'Ver historial',
+                      onAction: () => context.pushNamed(AppRoute.travelHistory.name),
                       children: [
                         Text(
                           'Has completado ${metrics.completedRidesThisWeek} viajes con ${metrics.cancelledRidesThisWeek} cancelaciones.',
@@ -83,6 +91,8 @@ class DashboardScreen extends ConsumerWidget {
                     _DashboardSection(
                       title: 'Ingresos',
                       accentColor: colorScheme.secondary,
+                      actionLabel: 'Exportar',
+                      onAction: () => _showComingSoon(context, 'la exportación de ingresos'),
                       children: [
                         _DashboardIncomeTile(
                           label: 'Ingresos semanales',
@@ -104,6 +114,19 @@ class DashboardScreen extends ConsumerWidget {
                     _DashboardSection(
                       title: 'Viaje en curso',
                       accentColor: colorScheme.tertiary,
+                      actionLabel: 'Ver detalles',
+                      onAction: () {
+                        currentTripAsync.whenData((trip) {
+                          if (trip == null) {
+                            _showComingSoon(context, 'los detalles del viaje');
+                          } else {
+                            context.pushNamed(
+                              AppRoute.currentTripDetails.name,
+                              extra: trip,
+                            );
+                          }
+                        });
+                      },
                       children: [currentTripSection],
                     ),
                     const SizedBox(height: 24),
@@ -134,7 +157,7 @@ class DashboardScreen extends ConsumerWidget {
   }
 
   //4.- _buildCurrentTrip presenta el estado del viaje o un fallback cuando no existe.
-  Widget _buildCurrentTrip(DashboardCurrentTrip? trip) {
+  Widget _buildCurrentTrip(BuildContext context, DashboardCurrentTrip? trip) {
     if (trip == null) {
       return const Text('No tienes viajes activos en este momento.');
     }
@@ -147,7 +170,71 @@ class DashboardScreen extends ConsumerWidget {
         Text('Estado: ${trip.status}'),
         Text('Placas: ${trip.vehiclePlate}'),
         Text('ETA: ${trip.etaMinutes} min'),
+        Text('Monto estimado: ${trip.amount.toStringAsFixed(2)} MXN'),
+        Text('Duración estimada: ${trip.durationMinutes} min'),
+        Text('Distancia estimada: ${trip.distanceKm.toStringAsFixed(1)} km'),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: [
+            FilledButton.tonalIcon(
+              onPressed: () => context.pushNamed(
+                AppRoute.driverProfile.name,
+                extra: trip,
+              ),
+              icon: const Icon(Icons.person_outline),
+              label: const Text('Perfil del conductor'),
+            ),
+            FilledButton.tonalIcon(
+              onPressed: () => context.pushNamed(
+                AppRoute.currentTripDetails.name,
+                extra: trip,
+              ),
+              icon: const Icon(Icons.receipt_long_outlined),
+              label: const Text('Detalles del viaje'),
+            ),
+            OutlinedButton.icon(
+              onPressed: () => _confirmCancelTrip(context),
+              icon: const Icon(Icons.cancel),
+              label: const Text('Cancelar viaje'),
+            ),
+          ],
+        ),
       ],
+    );
+  }
+
+  //15.- _confirmCancelTrip centraliza la confirmación para cancelar un viaje activo.
+  Future<void> _confirmCancelTrip(BuildContext context) async {
+    final shouldCancel = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Cancelar viaje'),
+        content: const Text('¿Confirmas que deseas cancelar este viaje?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Volver'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Cancelar viaje'),
+          ),
+        ],
+      ),
+    );
+    if (shouldCancel == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Se envió la solicitud de cancelación.')),
+      );
+    }
+  }
+
+  //16.- _showComingSoon brinda retroalimentación rápida para acciones informativas.
+  void _showComingSoon(BuildContext context, String feature) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Pronto podrás acceder a $feature.')),
     );
   }
 }
@@ -158,11 +245,15 @@ class _DashboardSection extends StatelessWidget {
     required this.title,
     required this.children,
     this.accentColor,
+    this.actionLabel,
+    this.onAction,
   });
 
   final String title;
   final List<Widget> children;
   final Color? accentColor;
+  final String? actionLabel;
+  final VoidCallback? onAction;
 
   @override
   Widget build(BuildContext context) {
@@ -201,6 +292,12 @@ class _DashboardSection extends StatelessWidget {
                     style: headlineStyle,
                   ),
                 ),
+                if (actionLabel != null)
+                  TextButton.icon(
+                    onPressed: onAction,
+                    icon: const Icon(Icons.open_in_new),
+                    label: Text(actionLabel!),
+                  ),
               ],
             ),
             const SizedBox(height: 12),
@@ -324,6 +421,8 @@ class _DashboardQuickStat extends StatelessWidget {
     required this.value,
     required this.background,
     required this.foreground,
+    required this.actionLabel,
+    required this.onAction,
   });
 
   final IconData icon;
@@ -331,6 +430,8 @@ class _DashboardQuickStat extends StatelessWidget {
   final String value;
   final Color background;
   final Color foreground;
+  final String actionLabel;
+  final VoidCallback onAction;
 
   @override
   Widget build(BuildContext context) {
@@ -358,6 +459,12 @@ class _DashboardQuickStat extends StatelessWidget {
                     color: foreground,
                     fontWeight: FontWeight.bold,
                   ),
+            ),
+            const SizedBox(height: 12),
+            FilledButton.tonal(
+              onPressed: onAction,
+              style: FilledButton.styleFrom(foregroundColor: foreground),
+              child: Text(actionLabel),
             ),
           ],
         ),
