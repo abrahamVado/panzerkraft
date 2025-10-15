@@ -18,8 +18,8 @@ pluginManagement {
 
     plugins {
         id "dev.flutter.flutter-gradle-plugin" version "1.0.0" apply false
-        //1.- Move to Kotlin 2.0.0 so the Android plugin no longer depends on the removed BaseVariant APIs from AGP 8+.
-        id "org.jetbrains.kotlin.android" version "2.0.0" apply false
+        //1.- Pin Kotlin 1.9.24 because newer 2.x releases expect Android Gradle APIs that ship only in bleeding-edge toolchains.
+        id "org.jetbrains.kotlin.android" version "1.9.24" apply false
     }
 }
 

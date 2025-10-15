@@ -57,4 +57,53 @@ void main() {
       expect(controller.phase, TravelPhase.idle);
     });
   });
+
+  test('status and action labels reflect controller phase', () {
+    //1.- Build a controller with deterministic collaborators for the assertions.
+    final controller = TravelController(
+      locationService: _FakeLocationService(),
+      auctionManager: RideAuctionManager(random: Random(1)),
+    );
+    //2.- Verify the idle state messaging before any ride is planned.
+    expect(controller.statusLabel,
+        'No active rides. Ready for dispatch.');
+    expect(controller.nextActionLabel,
+        'Create a travel request to begin.');
+    //3.- Move through each phase and ensure the paired messages match the intent.
+    controller.updateRide(
+      RideRequest(
+        start: PlaceOption(
+          title: 'Origin',
+          subtitle: 'Start point',
+          location: const LatLng(19.4, -99.1),
+        ),
+        end: PlaceOption(
+          title: 'Destination',
+          subtitle: 'End point',
+          location: const LatLng(19.42, -99.2),
+        ),
+        rideForSelf: true,
+        distanceInKm: 12,
+        routePolyline: const [LatLng(19.4, -99.1), LatLng(19.42, -99.2)],
+      ),
+    );
+    expect(controller.statusLabel,
+        'Ride drafted. Awaiting auction launch.');
+    expect(controller.nextActionLabel,
+        'Review details and start the auction.');
+    controller.startAuction();
+    expect(controller.statusLabel, 'Waiting for taxi bids...');
+    controller.selectBid(controller.bids.first);
+    controller.confirmBid();
+    expect(controller.statusLabel,
+        'Driver selected. Confirm itinerary.');
+    controller.startRide();
+    expect(
+      controller.statusLabel,
+      'Ride in progress with ${controller.selectedBid?.driverName ?? 'driver'}',
+    );
+    controller.clearRide();
+    expect(controller.statusLabel,
+        'No active rides. Ready for dispatch.');
+  });
 }
