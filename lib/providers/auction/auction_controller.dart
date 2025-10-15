@@ -17,13 +17,13 @@ class AuctionTimingConfig {
   final Duration maxCountdown;
 
   //5.- El constructor valida que minCountdown no exceda maxCountdown.
-  const AuctionTimingConfig({
+  AuctionTimingConfig({
     required this.tickInterval,
     required this.minCountdown,
     required this.maxCountdown,
   }) : assert(!minCountdown.isNegative && !maxCountdown.isNegative),
-        assert(!tickInterval.isNegative && !tickInterval.isZero),
-        assert(!maxCountdown.isNegative && maxCountdown >= minCountdown);
+       assert(tickInterval > Duration.zero),
+       assert(maxCountdown >= minCountdown);
 }
 
 //6.- TickStreamFactory crea flujos de Durations para alimentar temporizadores.
@@ -36,7 +36,7 @@ final auctionRandomProvider = Provider<Random>((ref) {
 
 //8.- auctionTimingConfigProvider establece los parámetros por defecto del flujo.
 final auctionTimingConfigProvider = Provider<AuctionTimingConfig>((ref) {
-  return const AuctionTimingConfig(
+  return AuctionTimingConfig(
     tickInterval: Duration(seconds: 1),
     minCountdown: Duration(minutes: 5),
     maxCountdown: Duration(minutes: 7),
@@ -56,11 +56,14 @@ final bidGeneratorProvider = Provider<BidGenerator>((ref) {
 });
 
 //11.- auctionControllerProvider orquesta el estado usando un parámetro baseFare.
-final auctionControllerProvider = AutoDisposeNotifierProviderFamily<
-    AuctionController, AuctionState, double>(AuctionController.new);
+final auctionControllerProvider =
+    AutoDisposeNotifierProviderFamily<AuctionController, AuctionState, double>(
+      AuctionController.new,
+    );
 
 //12.- AuctionController implementa el flujo completo de selección y espera.
-class AuctionController extends AutoDisposeNotifier<AuctionState> {
+class AuctionController
+    extends AutoDisposeFamilyNotifier<AuctionState, double> {
   StreamSubscription<Duration>? _tickerSub;
   Duration _stopwatchBase = Duration.zero;
   late double _baseFare;
@@ -69,7 +72,9 @@ class AuctionController extends AutoDisposeNotifier<AuctionState> {
   AuctionState build(double baseFare) {
     _baseFare = baseFare;
     ref.onDispose(_cancelTicker);
-    final bids = ref.read(bidGeneratorProvider).generateBids(baseFare: baseFare);
+    final bids = ref
+        .read(bidGeneratorProvider)
+        .generateBids(baseFare: baseFare);
     return AuctionState.initial(bids);
   }
 
