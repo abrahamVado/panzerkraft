@@ -2,10 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../../models/ride_route_models.dart';
 import '../../providers/ride_creation_providers.dart';
+import '../../router/app_router.dart';
 
 //1.- Claves globales para facilitar la interacción en pruebas automatizadas.
 const routeSelectionOriginFieldKey = Key('route_selection_origin_field');
@@ -116,6 +118,7 @@ class _RouteSelectionScreenState extends ConsumerState<RouteSelectionScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Route stored. Proceed to auction.')),
     );
+    context.pushNamed(AppRoute.auction.name);
   }
 
   Widget _buildSuggestionList(

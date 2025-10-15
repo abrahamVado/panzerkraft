@@ -1,0 +1,81 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../providers/auth_providers.dart';
+import '../screens/auth/login_screen.dart';
+import '../screens/dashboard/dashboard_screen.dart';
+import '../screens/ride_creation/auction_screen.dart';
+import '../screens/ride_creation/ride_map_screen.dart';
+import '../screens/ride_creation/route_selection_screen.dart';
+import '../services/auth/fake_credentials.dart';
+
+//1.- AppRoute enum documenta los nombres simbólicos usados en la configuración de GoRouter.
+enum AppRoute {
+  login,
+  dashboard,
+  rideMap,
+  routeSelection,
+  auction,
+}
+
+//2.- _rootNavigatorKey mantiene una referencia global para manipular el stack raíz si es necesario.
+final _rootNavigatorKey = GlobalKey<NavigatorState>();
+
+//3.- appRouterProvider construye y comparte la instancia de GoRouter sincronizada con Riverpod.
+final appRouterProvider = Provider<GoRouter>((ref) {
+  //4.- authListenable expone cambios de sesión a GoRouter mediante un ValueNotifier.
+  final authListenable = ValueNotifier<RiderAccount?>(ref.read(signedInRiderProvider));
+
+  //5.- Nos aseguramos de actualizar el notifier y liberarlo cuando el provider se descarte.
+  ref.onDispose(authListenable.dispose);
+  ref.listen(signedInRiderProvider, (_, next) {
+    authListenable.value = next;
+  });
+
+  //6.- Configuramos las rutas declarativas, asignando cada pantalla del flujo solicitado.
+  return GoRouter(
+    navigatorKey: _rootNavigatorKey,
+    initialLocation: '/dashboard',
+    refreshListenable: authListenable,
+    routes: [
+      GoRoute(
+        path: '/login',
+        name: AppRoute.login.name,
+        builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: '/dashboard',
+        name: AppRoute.dashboard.name,
+        builder: (context, state) => const DashboardScreen(),
+      ),
+      GoRoute(
+        path: '/ride/map',
+        name: AppRoute.rideMap.name,
+        builder: (context, state) => const RideMapScreen(),
+      ),
+      GoRoute(
+        path: '/ride/route',
+        name: AppRoute.routeSelection.name,
+        builder: (context, state) => const RouteSelectionScreen(),
+      ),
+      GoRoute(
+        path: '/ride/auction',
+        name: AppRoute.auction.name,
+        builder: (context, state) => const AuctionScreen(),
+      ),
+    ],
+    redirect: (context, state) {
+      //7.- redirect aplica las reglas de autenticación para forzar login o dashboard según corresponda.
+      final isLoggedIn = authListenable.value != null;
+      final loggingIn = state.matchedLocation == '/login';
+      if (!isLoggedIn) {
+        return loggingIn ? null : '/login';
+      }
+      if (loggingIn) {
+        return '/dashboard';
+      }
+      return null;
+    },
+  );
+});

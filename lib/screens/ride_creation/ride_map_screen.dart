@@ -2,9 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../../providers/ride_creation_providers.dart';
+import '../../router/app_router.dart';
 import '../../services/location/ride_location_service.dart';
 
 //1.- Claves globales para acceder a los elementos principales durante las pruebas de widgets.
@@ -121,7 +123,7 @@ class _RideMapScreenState extends ConsumerState<RideMapScreen> {
   }
 
   void _selectMode(RideCreationMode mode) {
-    //6.- Guardamos la elección en el estado compartido y cerramos el menú.
+    //6.- Guardamos la elección en el estado compartido y abrimos la siguiente pantalla del flujo.
     ref.read(rideCreationModeProvider.notifier).state = mode;
     Navigator.of(context).pop();
     ScaffoldMessenger.of(context).showSnackBar(
@@ -133,6 +135,12 @@ class _RideMapScreenState extends ConsumerState<RideMapScreen> {
         ),
       ),
     );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      context.pushNamed(AppRoute.routeSelection.name);
+    });
   }
 
   void _onMapCreated(GoogleMapController controller) {

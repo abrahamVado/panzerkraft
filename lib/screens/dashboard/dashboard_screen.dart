@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../providers/auth_providers.dart';
 import '../../services/dashboard/dashboard_current_trip_service.dart';
 import '../../services/dashboard/dashboard_metrics_service.dart';
-import '../ride_creation/ride_map_screen.dart';
+import '../../router/app_router.dart';
 
 //1.- dashboardCreateRideButtonKey permite que las pruebas verifiquen el CTA principal.
 const dashboardCreateRideButtonKey = Key('dashboard_create_ride_button');
@@ -81,10 +82,8 @@ class DashboardScreen extends ConsumerWidget {
                     ElevatedButton(
                       key: dashboardCreateRideButtonKey,
                       onPressed: () {
-                        //6.- Navegamos al mapa para configurar el nuevo viaje.
-                        Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const RideMapScreen()),
-                        );
+                        //6.- Navegamos al mapa mediante GoRouter para mantener un stack consistente.
+                        context.pushNamed(AppRoute.rideMap.name);
                       },
                       child: const Text('Crear viaje de taxi'),
                     ),
