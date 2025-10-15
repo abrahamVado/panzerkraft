@@ -276,6 +276,7 @@ class _RouteSelectionScreenState extends ConsumerState<RouteSelectionScreen> {
     final state = ref.watch(routeSelectionControllerProvider);
     final markers = _buildMarkers(state);
     final polylines = _buildPolylines(state);
+    final selectedRoute = state.selectedRoute;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Choose your route')),
@@ -352,7 +353,23 @@ class _RouteSelectionScreenState extends ConsumerState<RouteSelectionScreen> {
                 Expanded(
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(16),
-                    child: _buildMap(markers, polylines),
+                    child: Stack(
+                      children: [
+                        _buildMap(markers, polylines),
+                        if (selectedRoute != null)
+                          Positioned(
+                            top: 12,
+                            left: 12,
+                            right: 12,
+                            child: _RouteSummaryBanner(
+                              route: selectedRoute,
+                              origin: state.origin,
+                              destination: state.destination,
+                              summaryLabel: _formatRouteMetadata(selectedRoute),
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -408,12 +425,81 @@ class _RouteSelectionScreenState extends ConsumerState<RouteSelectionScreen> {
   }
 
   String _formatRouteMetadata(RideRouteOption option) {
-    //16.- Convertimos distancia y duración en etiquetas amigables para el usuario.
+    //16.- Convertimos distancia, duración y hora estimada en texto amigable.
     final distanceKm = option.distanceMeters / 1000;
     final durationMinutes = (option.durationSeconds / 60).round();
     final distanceText = distanceKm >= 1
         ? '${distanceKm.toStringAsFixed(1)} km'
         : '${option.distanceMeters} m';
-    return '$distanceText · ${durationMinutes} min';
+    final eta = _formatEta(option.durationSeconds);
+    return '$distanceText · ${durationMinutes} min · ETA $eta';
+  }
+}
+
+String _formatEta(int durationSeconds) {
+  //17.- _formatEta calcula la hora estimada de llegada con formato HH:mm.
+  final arrival = DateTime.now().add(Duration(seconds: durationSeconds));
+  final hours = arrival.hour.toString().padLeft(2, '0');
+  final minutes = arrival.minute.toString().padLeft(2, '0');
+  return '$hours:$minutes';
+}
+
+//18.- _RouteSummaryBanner resume distancia y duración sobre el mapa para dos puntos.
+class _RouteSummaryBanner extends StatelessWidget {
+  const _RouteSummaryBanner({
+    required this.route,
+    required this.origin,
+    required this.destination,
+    required this.summaryLabel,
+  });
+
+  final RideRouteOption route;
+  final RideWaypoint? origin;
+  final RideWaypoint? destination;
+  final String summaryLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    return Material(
+      elevation: 6,
+      borderRadius: BorderRadius.circular(16),
+      color: colorScheme.surface,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.timeline, size: 20),
+                const SizedBox(width: 8),
+                Text('Viaje estimado', style: theme.textTheme.titleSmall),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Ruta: ${route.summary}',
+              style: theme.textTheme.bodySmall,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              summaryLabel,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              '${origin?.description ?? 'Origen sin nombre'} → ${destination?.description ?? 'Destino sin nombre'}',
+              style: theme.textTheme.bodySmall,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
