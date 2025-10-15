@@ -8,8 +8,45 @@ import '../../../services/dashboard/dashboard_travel_history_service.dart';
 const travelHistoryThumbnailAsset =
     'assets/images/travel_history/default_thumbnail.png';
 
+//1.2.- travelHistoryVehicleThumbnails agrupa las imágenes ilustrativas disponibles.
+const List<String> travelHistoryVehicleThumbnails = [
+  'assets/images/travel_history/vehicle_1.jpg',
+  'assets/images/travel_history/vehicle_2.jpg',
+  'assets/images/travel_history/vehicle_3.jpg',
+  'assets/images/travel_history/vehicle_4.jpg',
+  'assets/images/travel_history/vehicle_5.jpg',
+  'assets/images/travel_history/vehicle_6.jpg',
+];
+
 //1.2.- travelHistoryThumbnailKey permite ubicar la miniatura en pruebas de widgets.
 const travelHistoryThumbnailKey = Key('travel_history_thumbnail');
+
+//1.3.- TravelHistoryThumbnailResolver asigna una imagen determinística por viaje.
+class TravelHistoryThumbnailResolver {
+  const TravelHistoryThumbnailResolver({
+    this.vehicleAssets = travelHistoryVehicleThumbnails,
+    this.fallbackAsset = travelHistoryThumbnailAsset,
+  });
+
+  final List<String> vehicleAssets;
+  final String fallbackAsset;
+
+  String assetForEntry(TravelHistoryEntry entry) {
+    if (vehicleAssets.isEmpty) {
+      return fallbackAsset;
+    }
+    final hash = Object.hash(
+      entry.date.millisecondsSinceEpoch,
+      entry.origin,
+      entry.destination,
+      entry.durationMinutes,
+      entry.distanceKm,
+      entry.fare,
+    );
+    final index = hash.abs() % vehicleAssets.length;
+    return vehicleAssets[index];
+  }
+}
 
 //1.- TravelHistoryScreen muestra la lista paginada de viajes completados.
 class TravelHistoryScreen extends ConsumerWidget {
@@ -111,7 +148,7 @@ class _TravelHistoryTile extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 16),
-            const _TravelHistoryThumbnail(),
+            _TravelHistoryThumbnail(entry: entry),
           ],
         ),
       ),
@@ -127,13 +164,19 @@ class _TravelHistoryTile extends StatelessWidget {
 
 //2.1.- _TravelHistoryThumbnail reserva espacio para la imagen ilustrativa del viaje.
 class _TravelHistoryThumbnail extends StatelessWidget {
-  const _TravelHistoryThumbnail();
+  const _TravelHistoryThumbnail({
+    required this.entry,
+    this.resolver = const TravelHistoryThumbnailResolver(),
+  });
 
   static const double _thumbnailWidth = 120;
+  final TravelHistoryEntry entry;
+  final TravelHistoryThumbnailResolver resolver;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final assetPath = resolver.assetForEntry(entry);
     return SizedBox(
       width: _thumbnailWidth,
       child: ClipRRect(
@@ -141,7 +184,7 @@ class _TravelHistoryThumbnail extends StatelessWidget {
         child: AspectRatio(
           aspectRatio: 4 / 3,
           child: Image.asset(
-            travelHistoryThumbnailAsset,
+            assetPath,
             key: travelHistoryThumbnailKey,
             fit: BoxFit.cover,
             errorBuilder: (context, error, stackTrace) {
