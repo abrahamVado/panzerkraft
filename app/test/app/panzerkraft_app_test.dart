@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:panzerkraft/app.dart';
+import 'package:app/app.dart';
 
 void main() {
   testWidgets('PanzerkraftApp shows the authentication flow by default', (tester) async {

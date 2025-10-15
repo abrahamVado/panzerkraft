@@ -86,10 +86,11 @@ void main() {
 
   test('returns actual coordinates once permission is granted', () async {
     //1.- Provide a deterministic mock position to return after permission.
-    const position = Position(
+    final position = Position(
       latitude: 10.5,
       longitude: -66.9,
-      timestamp: null,
+      //1.1.- Provide a deterministic timestamp because newer geolocator versions require un valor concreto.
+      timestamp: DateTime.fromMillisecondsSinceEpoch(0),
       accuracy: 5,
       altitude: 0,
       altitudeAccuracy: 1,

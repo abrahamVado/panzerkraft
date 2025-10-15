@@ -28,5 +28,15 @@ void main() {
       //3.- Accept a tolerance band that still reflects ~10 MXN variability.
       expect(stdDeviation, inInclusiveRange(5, 20));
     });
+
+    test('orders bids from lowest to highest amount', () {
+      //1.- Usa una semilla fija para producir un set repetible de ofertas.
+      final manager = RideAuctionManager(random: Random(5));
+      //2.- Genera las ofertas simuladas empleando un precio base.
+      final bids = manager.generateBids(baseFare: 200);
+      //3.- Verifica que las ofertas queden ordenadas ascendentemente por monto.
+      final sorted = [...bids]..sort((a, b) => a.amount.compareTo(b.amount));
+      expect(bids, sorted);
+    });
   });
 }
