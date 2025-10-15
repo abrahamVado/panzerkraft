@@ -89,7 +89,39 @@ void main() {
       expect(directions.lastDestination, destination);
       expect(controller.state.routes, expectedRoutes);
       expect(controller.state.isLoadingRoutes, isFalse);
-      expect(controller.state.selectedRoute, isNull);
+      expect(controller.state.selectedRoute, expectedRoutes.first);
+    });
+
+    //6.- El controlador debe elegir automáticamente la ruta más rápida entre opciones.
+    test('auto select fastest route when multiple options', () async {
+      final fastRoute = const RideRouteOption(
+        id: 'fast',
+        polyline: 'abc',
+        distanceMeters: 1500,
+        durationSeconds: 600,
+        summary: 'Fast Lane',
+      );
+      final scenicRoute = const RideRouteOption(
+        id: 'scenic',
+        polyline: 'def',
+        distanceMeters: 1300,
+        durationSeconds: 620,
+        summary: 'Scenic',
+      );
+      final directions =
+          _FakeDirectionsService(routesToReturn: [scenicRoute, fastRoute]);
+      final controller = RouteSelectionController(
+        places: _FakePlaceAutocompleteService(),
+        directions: directions,
+      );
+      final origin = const LatLng(10, 10);
+      final destination = const LatLng(11, 11);
+
+      await controller.selectOriginFromMap(origin);
+      await controller.selectDestinationFromMap(destination);
+
+      expect(controller.state.routes, containsAll([scenicRoute, fastRoute]));
+      expect(controller.state.selectedRoute, fastRoute);
     });
   });
 }

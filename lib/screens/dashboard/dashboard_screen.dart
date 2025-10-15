@@ -8,6 +8,11 @@ import '../../providers/auth_providers.dart';
 import '../../services/dashboard/dashboard_current_trip_service.dart';
 import '../../services/dashboard/dashboard_metrics_service.dart';
 import '../../router/app_router.dart';
+import 'widgets/finance_overview.dart';
+
+//1.1.- dashboardFinanceRangeProvider conserva el periodo mostrado en finanzas.
+final dashboardFinanceRangeProvider =
+    StateProvider<FinanceRange>((ref) => FinanceRange.week);
 
 //1.- dashboardCreateRideButtonKey permite que las pruebas verifiquen el CTA principal.
 const dashboardCreateRideButtonKey = Key('dashboard_create_ride_button');
@@ -16,15 +21,31 @@ const dashboardCreateRideButtonKey = Key('dashboard_create_ride_button');
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
+  //2.1.- _logout restablece la sesión y regresa a la pantalla de acceso.
+  void _logout(BuildContext context, WidgetRef ref) {
+    ref.read(signedInRiderProvider.notifier).state = null;
+    context.goNamed(AppRoute.login.name);
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     //3.- build observa el rider, métricas agregadas y viaje actual del tablero.
     final rider = ref.watch(signedInRiderProvider);
     final metricsAsync = ref.watch(dashboardMetricsProvider);
     final currentTripAsync = ref.watch(dashboardCurrentTripProvider);
+    final selectedFinanceRange = ref.watch(dashboardFinanceRangeProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Panel de control')),
+      appBar: AppBar(
+        title: const Text('Panel de control'),
+        actions: [
+          IconButton(
+            onPressed: () => _logout(context, ref),
+            icon: const Icon(Icons.logout),
+            tooltip: 'Cerrar sesión',
+          ),
+        ],
+      ),
       body: rider == null
           ? const Center(child: Text('Inicia sesión para ver tu tablero.'))
           : metricsAsync.when(
@@ -89,26 +110,23 @@ class DashboardScreen extends ConsumerWidget {
                       ],
                     ),
                     _DashboardSection(
-                      title: 'Ingresos',
+                      title: 'Finanzas',
                       accentColor: colorScheme.secondary,
                       actionLabel: 'Exportar',
-                      onAction: () => _showComingSoon(context, 'la exportación de ingresos'),
+                      onAction: () =>
+                          _showComingSoon(context, 'la exportación de finanzas'),
                       children: [
-                        _DashboardIncomeTile(
-                          label: 'Ingresos semanales',
-                          amount: metrics.weeklyEarnings,
-                          icon: Icons.trending_up,
-                          color: colorScheme.secondary,
+                        FinanceRangeSelector(
+                          selectedRange: selectedFinanceRange,
+                          onChanged: (range) => ref
+                              .read(dashboardFinanceRangeProvider.notifier)
+                              .state = range,
                         ),
-                        const SizedBox(height: 8),
-                        _DashboardIncomeTile(
-                          label: 'Ingresos mensuales',
-                          amount: metrics.monthlyEarnings,
-                          icon: Icons.calendar_month,
-                          color: colorScheme.tertiary,
+                        const SizedBox(height: 16),
+                        FinanceStatsGrid(
+                          snapshot: metrics.snapshotFor(selectedFinanceRange),
+                          acceptanceRate: metrics.acceptanceRate.toDouble(),
                         ),
-                        const SizedBox(height: 8),
-                        _AcceptanceRateMeter(rate: metrics.acceptanceRate.toDouble()),
                       ],
                     ),
                     _DashboardSection(
@@ -473,85 +491,6 @@ class _DashboardQuickStat extends StatelessWidget {
   }
 }
 
-//9.- _DashboardIncomeTile resume un monto destacado acompañado de un icono.
-class _DashboardIncomeTile extends StatelessWidget {
-  const _DashboardIncomeTile({
-    required this.label,
-    required this.amount,
-    required this.icon,
-    required this.color,
-  });
-
-  final String label;
-  final double amount;
-  final IconData icon;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            backgroundColor: color.withOpacity(0.2),
-            foregroundColor: color,
-            child: Icon(icon),
-          ),
-          const SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(label, style: theme.textTheme.bodyMedium?.copyWith(color: color.darken())),
-              Text(
-                '\$${amount.toStringAsFixed(2)}',
-                style: theme.textTheme.titleMedium?.copyWith(
-                      color: color.darken(0.2),
-                      fontWeight: FontWeight.w600,
-                    ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-//10.- _AcceptanceRateMeter traduce la tasa de aceptación a una barra radial sencilla.
-class _AcceptanceRateMeter extends StatelessWidget {
-  const _AcceptanceRateMeter({required this.rate});
-
-  final double rate;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final normalized = (rate.clamp(0, 100)) / 100;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Tasa de aceptación', style: theme.textTheme.bodyMedium),
-        const SizedBox(height: 8),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: LinearProgressIndicator(
-            value: normalized,
-            minHeight: 12,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text('${rate.toStringAsFixed(1)}% de viajes aceptados', style: theme.textTheme.bodySmall),
-      ],
-    );
-  }
-}
-
 //11.- _RideTrendChart dibuja un gráfico de barras simplificado sin dependencias externas.
 class _RideTrendChart extends StatelessWidget {
   const _RideTrendChart({required this.data, required this.color});
@@ -624,11 +563,3 @@ List<int> _generateRideTrend(DashboardMetrics metrics) {
   return List<int>.generate(5, (index) => base + index);
 }
 
-//14.- Extensión auxiliar para oscurecer ligeramente los colores.
-extension ColorDarken on Color {
-  Color darken([double amount = 0.1]) {
-    final hsl = HSLColor.fromColor(this);
-    final darker = hsl.withLightness((hsl.lightness - amount).clamp(0.0, 1.0));
-    return darker.toColor();
-  }
-}

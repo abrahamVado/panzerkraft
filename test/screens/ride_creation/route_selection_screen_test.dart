@@ -134,7 +134,7 @@ void main() {
     expect(find.text('Select a destination'), findsOneWidget);
   });
 
-  testWidgets('routes are rendered and selectable before enabling CTA',
+  testWidgets('routes render summary and CTA enables automatically',
       (tester) async {
     final container = _createContainer();
     final markersLog = ValueNotifier<Set<Marker>>({});
@@ -166,12 +166,14 @@ void main() {
     expect(polylinesLog.value.isNotEmpty, isTrue);
 
     final startButton = find.byKey(routeSelectionStartButtonKey);
-    expect(tester.widget<FilledButton>(startButton).onPressed, isNull);
+    expect(tester.widget<FilledButton>(startButton).onPressed, isNotNull);
+    expect(find.textContaining('Viaje estimado'), findsOneWidget);
+    expect(find.textContaining('Ruta: Fastest'), findsOneWidget);
 
-    await tester.tap(find.byKey(const Key('route_option_0')));
+    await tester.tap(find.byKey(const Key('route_option_1')));
     await tester.pump();
 
-    expect(tester.widget<FilledButton>(startButton).onPressed, isNotNull);
+    expect(find.textContaining('Ruta: Scenic'), findsOneWidget);
   });
 
   testWidgets('tocar el mapa llena el origen y el destino según el foco',

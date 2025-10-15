@@ -249,10 +249,11 @@ class RouteSelectionController extends StateNotifier<RideRouteState> {
         origin.location,
         destination.location,
       );
+      final selected = _chooseBestRoute(results);
       state = state.copyWith(
         isLoadingRoutes: false,
         routes: results,
-        selectedRoute: null,
+        selectedRoute: selected,
       );
     } catch (err) {
       state = state.copyWith(
@@ -275,6 +276,24 @@ class RouteSelectionController extends StateNotifier<RideRouteState> {
       description: '$label $coordinates',
       location: position,
     );
+  }
+
+  RideRouteOption? _chooseBestRoute(List<RideRouteOption> options) {
+    //22.2.- _chooseBestRoute selecciona la ruta con menor duración y distancia.
+    if (options.isEmpty) {
+      return null;
+    }
+    final sorted = [...options]
+      ..sort(
+        (a, b) {
+          final durationCompare = a.durationSeconds.compareTo(b.durationSeconds);
+          if (durationCompare != 0) {
+            return durationCompare;
+          }
+          return a.distanceMeters.compareTo(b.distanceMeters);
+        },
+      );
+    return sorted.first;
   }
 }
 
