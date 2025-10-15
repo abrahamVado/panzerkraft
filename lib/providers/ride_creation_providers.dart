@@ -271,7 +271,7 @@ class RouteSelectionController extends StateNotifier<RideRouteState> {
         '(${position.latitude.toStringAsFixed(5)}, ${position.longitude.toStringAsFixed(5)})';
     final idPrefix = isOrigin ? 'origin' : 'destination';
     return RideWaypoint(
-      placeId: 'map_$idPrefix_${position.latitude}_${position.longitude}',
+      placeId: 'map_${idPrefix}_${position.latitude}_${position.longitude}',
       description: '$label $coordinates',
       location: position,
     );
