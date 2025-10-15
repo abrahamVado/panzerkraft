@@ -18,7 +18,7 @@ pluginManagement {
 
     plugins {
         id "dev.flutter.flutter-gradle-plugin" version "1.0.0" apply false
-        //1.- Match the Kotlin plugin to 2.0.21 so it stays in lockstep with the AGP 8.7.2 toolchain requirements.
+        //1.- Match the Kotlin plugin to 2.0.21 so it stays in lockstep with the adjusted AGP 8.5.2 toolchain.
         id "org.jetbrains.kotlin.android" version "2.0.21" apply false
     }
 }
