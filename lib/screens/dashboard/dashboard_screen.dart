@@ -70,12 +70,14 @@ class DashboardScreen extends ConsumerWidget {
                         const spacing = 12.0;
                         const minHeight = 240.0;
                         final maxWidth = constraints.maxWidth;
-                        const crossAxisCount = 2;
+                        //4.1.- isWide activa tres columnas cuando el ancho disponible supera 900 px.
+                        final isWide = maxWidth >= 900;
+                        final crossAxisCount = isWide ? 3 : 2;
                         final totalSpacing = spacing * (crossAxisCount - 1);
-                        final clampedWidth =
-                            (maxWidth - totalSpacing).clamp(160.0, double.infinity)
-                                as double;
-                        final itemWidth = clampedWidth / crossAxisCount;
+                        //4.2.- rawItemWidth define el tamaño por tarjeta y limita la altura mediante el aspect ratio.
+                        final availableWidth = math.max(maxWidth - totalSpacing, 0);
+                        final rawItemWidth = availableWidth / crossAxisCount;
+                        final itemWidth = rawItemWidth.clamp(160.0, double.infinity);
                         final aspectRatio = itemWidth / minHeight;
                         final quickStats = [
                           _DashboardQuickStat(
