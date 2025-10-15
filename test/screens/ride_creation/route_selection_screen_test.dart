@@ -231,8 +231,9 @@ void main() {
 
   testWidgets('selected route polyline stands out with accent styling',
       (tester) async {
-    final container = _createContainer();
     final polylinesLog = ValueNotifier<Set<Polyline>>({});
+    final directions = FakeDirectionsService();
+    final container = _createContainer(directionsService: directions);
 
     await tester.pumpWidget(
       _buildTestableScreen(
@@ -256,42 +257,18 @@ void main() {
     final calculateButton = find.byKey(routeSelectionCalculateButtonKey);
     expect(calculateButton, findsOneWidget);
 
-    await tester.tap(calculateButton);
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
 
     expect(polylinesLog.value, isNotEmpty);
+    expect(directions.lastOrigin, const LatLng(19.0, -99.0));
+    expect(directions.lastDestination, const LatLng(19.1, -99.1));
     final selectedPolyline = polylinesLog.value.firstWhere(
       (polyline) => polyline.width == 6,
       orElse: () => throw StateError('No highlighted polyline found'),
     );
     expect(selectedPolyline.color, Colors.blueAccent);
     expect(selectedPolyline.zIndex, 1);
-  });
-
-  testWidgets('demo button fills origin, destination and triggers directions',
-      (tester) async {
-    final directions = FakeDirectionsService();
-    final container = _createContainer(directionsService: directions);
-
-    await tester.pumpWidget(_buildTestableScreen(container: container));
-
-    await tester.tap(find.byKey(routeSelectionUseDemoButtonKey));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 400));
-
-    expect(find.text('Mexico City Historic Center'), findsOneWidget);
-    expect(find.text('Teotihuacán Archaeological Site'), findsOneWidget);
-    expect(
-      directions.lastOrigin,
-      const LatLng(19.4326, -99.1332),
-    );
-    expect(
-      directions.lastDestination,
-      const LatLng(19.7008, -98.8456),
-    );
-    expect(find.byKey(const Key('route_option_0')), findsOneWidget);
-    expect(find.byKey(const Key('route_option_1')), findsOneWidget);
   });
 
   testWidgets('calculate button uses current location when origin missing',

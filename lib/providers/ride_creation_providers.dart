@@ -163,6 +163,7 @@ class RouteSelectionController extends StateNotifier<RideRouteState> {
       routes: const [],
       clearError: true,
     );
+    await _refreshRoutesIfReady();
   }
 
   //18.1.- selectOriginFromMap crea un waypoint directo tomando la coordenada elegida en el mapa.
@@ -175,6 +176,7 @@ class RouteSelectionController extends StateNotifier<RideRouteState> {
       routes: const [],
       clearError: true,
     );
+    await _refreshRoutesIfReady();
   }
 
   //18.- selectDestination actúa igual pero para el punto de llegada.
@@ -193,6 +195,7 @@ class RouteSelectionController extends StateNotifier<RideRouteState> {
       routes: const [],
       clearError: true,
     );
+    await _refreshRoutesIfReady();
   }
 
   //18.2.- selectDestinationFromMap replica el flujo anterior pero con coordenadas sin Place ID.
@@ -205,6 +208,7 @@ class RouteSelectionController extends StateNotifier<RideRouteState> {
       routes: const [],
       clearError: true,
     );
+    await _refreshRoutesIfReady();
   }
 
   //19.- clearOrigin restablece el formulario cuando el usuario cambia de opinión.
@@ -240,36 +244,16 @@ class RouteSelectionController extends StateNotifier<RideRouteState> {
     await _fetchRoutes();
   }
 
-  //21.2.- useHistoricCenterToTeotihuacanDemoRoute precarga una ruta de ejemplo entre CDMX y Teotihuacán.
-  Future<void> useHistoricCenterToTeotihuacanDemoRoute() async {
-    //21.2.1.- Definimos las coordenadas fijas compartidas en la documentación de Google Maps.
-    const originPosition = LatLng(19.4326, -99.1332);
-    const destinationPosition = LatLng(19.7008, -98.8456);
-
-    //21.2.2.- Construimos waypoints descriptivos que permitan completar los campos del formulario.
-    const originWaypoint = RideWaypoint(
-      placeId: 'demo_origin_mexico_city_centro',
-      description: 'Mexico City Historic Center',
-      location: originPosition,
-    );
-    const destinationWaypoint = RideWaypoint(
-      placeId: 'demo_destination_teotihuacan_site',
-      description: 'Teotihuacán Archaeological Site',
-      location: destinationPosition,
-    );
-
-    //21.2.3.- Actualizamos el estado eliminando sugerencias previas y limpiando mensajes de error.
-    state = state.copyWith(
-      origin: originWaypoint,
-      destination: destinationWaypoint,
-      originSuggestions: const [],
-      destinationSuggestions: const [],
-      clearSelectedRoute: true,
-      routes: const [],
-      clearError: true,
-    );
-
-    //21.2.4.- Finalmente solicitamos al Directions API las rutas disponibles entre ambos puntos.
+  //21.2.- _refreshRoutesIfReady invoca Directions API cuando hay origen y destino válidos.
+  Future<void> _refreshRoutesIfReady() async {
+    if (state.isLoadingRoutes) {
+      return;
+    }
+    final origin = state.origin;
+    final destination = state.destination;
+    if (origin == null || destination == null) {
+      return;
+    }
     await _fetchRoutes();
   }
 
