@@ -163,7 +163,6 @@ class RouteSelectionController extends StateNotifier<RideRouteState> {
       routes: const [],
       clearError: true,
     );
-    await _maybeFetchRoutes();
   }
 
   //18.1.- selectOriginFromMap crea un waypoint directo tomando la coordenada elegida en el mapa.
@@ -176,7 +175,6 @@ class RouteSelectionController extends StateNotifier<RideRouteState> {
       routes: const [],
       clearError: true,
     );
-    await _maybeFetchRoutes();
   }
 
   //18.- selectDestination actúa igual pero para el punto de llegada.
@@ -195,7 +193,6 @@ class RouteSelectionController extends StateNotifier<RideRouteState> {
       routes: const [],
       clearError: true,
     );
-    await _maybeFetchRoutes();
   }
 
   //18.2.- selectDestinationFromMap replica el flujo anterior pero con coordenadas sin Place ID.
@@ -208,7 +205,6 @@ class RouteSelectionController extends StateNotifier<RideRouteState> {
       routes: const [],
       clearError: true,
     );
-    await _maybeFetchRoutes();
   }
 
   //19.- clearOrigin restablece el formulario cuando el usuario cambia de opinión.
@@ -236,8 +232,16 @@ class RouteSelectionController extends StateNotifier<RideRouteState> {
     state = state.copyWith(selectedRoute: option, clearError: true);
   }
 
-  //22.- _maybeFetchRoutes solicita rutas sólo cuando tenemos ambos waypoints.
-  Future<void> _maybeFetchRoutes() async {
+  //21.1.- calculateRoutes permite al usuario detonar manualmente el cálculo del trayecto.
+  Future<void> calculateRoutes() async {
+    if (state.origin == null || state.destination == null) {
+      return;
+    }
+    await _fetchRoutes();
+  }
+
+  //22.- _fetchRoutes solicita rutas sólo cuando tenemos ambos waypoints.
+  Future<void> _fetchRoutes() async {
     final origin = state.origin;
     final destination = state.destination;
     if (origin == null || destination == null) {

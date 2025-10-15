@@ -185,6 +185,13 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
 
+    final calculateButton = find.byKey(routeSelectionCalculateButtonKey);
+    expect(calculateButton, findsOneWidget);
+
+    await tester.tap(calculateButton);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+
     expect(find.byKey(const Key('route_option_0')), findsOneWidget);
     await tester.tap(find.byKey(const Key('route_option_0')));
     await tester.pump();

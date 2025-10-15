@@ -63,8 +63,8 @@ void main() {
       expect(controller.state.routes, isEmpty);
     });
 
-    //5.- Cuando origen y destino provienen del mapa, deben solicitar rutas al servicio.
-    test('selectDestinationFromMap triggers route fetch with both waypoints', () async {
+    //5.- Cuando origen y destino provienen del mapa, la app calcula la ruta bajo demanda.
+    test('calculateRoutes fetches directions after selecting both waypoints', () async {
       final expectedRoutes = [
         const RideRouteOption(
           id: 'route-1',
@@ -84,6 +84,11 @@ void main() {
 
       await controller.selectOriginFromMap(origin);
       await controller.selectDestinationFromMap(destination);
+
+      expect(directions.lastOrigin, isNull);
+      expect(controller.state.routes, isEmpty);
+
+      await controller.calculateRoutes();
 
       expect(directions.lastOrigin, origin);
       expect(directions.lastDestination, destination);
@@ -119,6 +124,8 @@ void main() {
 
       await controller.selectOriginFromMap(origin);
       await controller.selectDestinationFromMap(destination);
+
+      await controller.calculateRoutes();
 
       expect(controller.state.routes, containsAll([scenicRoute, fastRoute]));
       expect(controller.state.selectedRoute, fastRoute);

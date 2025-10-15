@@ -70,11 +70,7 @@ class DashboardScreen extends ConsumerWidget {
                         const spacing = 12.0;
                         const minHeight = 240.0;
                         final maxWidth = constraints.maxWidth;
-                        final crossAxisCount = maxWidth >= 900
-                            ? 3
-                            : maxWidth >= 600
-                                ? 2
-                                : 1;
+                        const crossAxisCount = 3;
                         final totalSpacing = spacing * (crossAxisCount - 1);
                         final clampedWidth =
                             (maxWidth - totalSpacing).clamp(160.0, double.infinity)
@@ -539,47 +535,76 @@ class _DashboardQuickStat extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-      decoration: BoxDecoration(
-        color: background,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: foreground),
-          const SizedBox(height: 12),
-          Text(
-            title,
-            style: theme.textTheme.labelLarge?.copyWith(color: foreground.withOpacity(0.85)),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: theme.textTheme.titleMedium?.copyWith(
-                  color: foreground,
-                  fontWeight: FontWeight.bold,
+    final iconColor = isEnabled ? foreground : foreground.withOpacity(0.45);
+    final titleColor = isEnabled ? foreground.withOpacity(0.85) : foreground.withOpacity(0.4);
+    final bodyColor = isEnabled ? foreground.withOpacity(0.9) : foreground.withOpacity(0.35);
+    final ctaColor = isEnabled ? foreground : foreground.withOpacity(0.5);
+    //18.- Material + Ink convierten toda la tarjeta en una superficie táctil con ripple.
+    return Material(
+      color: Colors.transparent,
+      child: Ink(
+        decoration: BoxDecoration(
+          color: background,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: isEnabled ? onAction : null,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(icon, color: iconColor),
+                const SizedBox(height: 12),
+                Text(
+                  title,
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: titleColor,
+                  ),
                 ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            description,
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: foreground.withOpacity(0.9),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                        color: iconColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  description,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: bodyColor,
+                  ),
+                ),
+                const Spacer(),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      actionLabel,
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        color: ctaColor,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Icon(
+                      Icons.arrow_forward_rounded,
+                      size: 18,
+                      color: ctaColor,
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
-          const Spacer(),
-          FilledButton.tonal(
-            onPressed: isEnabled ? onAction : null,
-            style: FilledButton.styleFrom(foregroundColor: foreground),
-            child: Text(actionLabel),
-          ),
-        ],
+        ),
       ),
     );
   }
