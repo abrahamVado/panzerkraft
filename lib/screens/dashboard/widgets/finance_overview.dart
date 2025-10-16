@@ -117,7 +117,17 @@ class _FinanceStatTile extends StatelessWidget {
               color: colorScheme.secondary,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: colorScheme.onSecondary),
+            child: SizedBox.expand(
+              //4.- SizedBox.expand garantiza que el icono toque los bordes internos eliminando el halo en Android.
+              child: FittedBox(
+                //5.- FittedBox respeta la proporción original del icono en cualquier densidad de pantalla.
+                fit: BoxFit.contain,
+                child: Icon(
+                  icon,
+                  color: colorScheme.onSecondary,
+                ),
+              ),
+            ),
           ),
           const SizedBox(width: 16),
           Expanded(
