@@ -110,21 +110,22 @@ class _FinanceStatTile extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: colorScheme.secondary,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: SizedBox.expand(
-              //4.- SizedBox.expand garantiza que el icono toque los bordes internos eliminando el halo en Android.
-              child: FittedBox(
-                //5.- FittedBox respeta la proporción original del icono en cualquier densidad de pantalla.
-                fit: BoxFit.contain,
-                child: Icon(
-                  icon,
-                  color: colorScheme.onSecondary,
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: SizedBox(
+              width: 44,
+              height: 44,
+              child: ColoredBox(
+                color: colorScheme.secondary,
+                child: FittedBox(
+                  //4.- FittedBox.cover escala el icono hasta tocar el borde evitando cualquier margen perceptible.
+                  fit: BoxFit.cover,
+                  child: Icon(
+                    icon,
+                    //5.- Un tamaño mayor al contenedor asegura que el recorte elimine el halo sobrante del glifo.
+                    size: 56,
+                    color: colorScheme.onSecondary,
+                  ),
                 ),
               ),
             ),
