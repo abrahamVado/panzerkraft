@@ -1,227 +1,342 @@
-
+//1.- Punto de entrada principal que inicializa la demo completa.
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shadcn_flutter/shadcn_flutter.dart' as shad;
-
-import 'config.dart';
-import 'providers/auth_providers.dart';
-import 'screens/auth/login_screen.dart';
-import 'screens/consult_screen.dart';
-import 'screens/dashboard/dashboard_screen.dart';
-import 'screens/map_report_screen.dart';
-import 'services/identity.dart';
-import 'theme/shad_theme_builder.dart';
-import 'theme/theme_controller.dart';
-import 'widgets/initialization_status_view.dart';
-import 'widgets/theme_mode_button.dart';
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-  //2.- runApp delega la inicialización pesada a BootstrapApp para mostrar una UI temprana.
-  runApp(const BootstrapApp());
+  //2.- Ejecuta la aplicación material raíz manteniendo la configuración declarativa.
+  runApp(const DemoShowcaseApp());
 }
 
-//2.- BootstrapApp muestra una pantalla interactiva mientras se completan las tareas críticas.
-class BootstrapApp extends StatefulWidget {
-  const BootstrapApp({super.key});
-
-  @override
-  State<BootstrapApp> createState() => _BootstrapAppState();
-}
-
-class _BootstrapAppState extends State<BootstrapApp> {
-  late Future<ProviderContainer> _initialization;
-  ProviderContainer? _container;
-  Object? _lastError;
-  StackTrace? _lastStackTrace;
-
-  @override
-  void initState() {
-    super.initState();
-    //1.- initState dispara el proceso de arranque y conserva el Future para el FutureBuilder.
-    _initialization = _initialize();
-  }
-
-  Future<ProviderContainer> _initialize() async {
-    final container = ProviderContainer();
-    try {
-      //1.- La inicialización prepara la identidad local antes de iniciar la app completa.
-      await Identity.ensureIdentity();
-      _lastError = null;
-      _lastStackTrace = null;
-      return container;
-    } catch (error, stackTrace) {
-      _lastError = error;
-      _lastStackTrace = stackTrace;
-      container.dispose();
-      rethrow;
-    }
-  }
-
-  void _retry() {
-    setState(() {
-      _initialization = _initialize();
-    });
-  }
-
-  @override
-  void dispose() {
-    //2.- dispose limpia el contenedor cuando la app se cierra.
-    _container?.dispose();
-    super.dispose();
-  }
+//3.- Widget raíz que configura el tema y el enrutamiento base.
+class DemoShowcaseApp extends StatelessWidget {
+  const DemoShowcaseApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    //3.- FutureBuilder decide entre la UI de progreso, error o la app completa.
-    return FutureBuilder<ProviderContainer>(
-      future: _initialization,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState != ConnectionState.done) {
-          return const MaterialApp(
-            home: InitializationStatusView(
-              title: 'Preparando aplicación',
-              message: 'Inicializando servicios, esto puede tardar unos segundos.',
-              showLoader: true,
+    //4.- Define el tema claro con colores contrastantes para la demo.
+    final colorScheme = ColorScheme.fromSeed(seedColor: const Color(0xFF0066CC));
+    return MaterialApp(
+      title: 'Panzerkraft Demo',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        colorScheme: colorScheme,
+        useMaterial3: true,
+        textTheme: ThemeData.light().textTheme.apply(
+              bodyColor: colorScheme.onSurface,
+              displayColor: colorScheme.onSurface,
             ),
-          );
-        }
-        if (snapshot.hasError) {
-          final detailsBuffer = StringBuffer();
-          if (_lastError != null) {
-            detailsBuffer.writeln(_lastError);
-          }
-          if (_lastStackTrace != null) {
-            detailsBuffer.writeln();
-            detailsBuffer.writeln(_lastStackTrace);
-          }
-          return MaterialApp(
-            home: InitializationStatusView(
-              title: 'No se pudo iniciar',
-              message: 'Revisa los detalles y vuelve a intentarlo.',
-              details: detailsBuffer.isEmpty ? 'Error desconocido.' : detailsBuffer.toString(),
-              onRetry: _retry,
-            ),
-          );
-        }
-        _container = snapshot.data;
-        return UncontrolledProviderScope(container: _container!, child: const MictlanApp());
-      },
-    );
-  }
-}
-
-class MictlanApp extends StatefulWidget {
-  const MictlanApp({super.key});
-
-  @override
-  State<MictlanApp> createState() => _MictlanAppState();
-}
-
-class _MictlanAppState extends State<MictlanApp> {
-  late final ThemeController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    //1.- initState crea el controlador de tema para compartirlo en toda la app.
-    _controller = ThemeController();
-  }
-
-  @override
-  void dispose() {
-    //2.- dispose libera el controlador cuando el árbol se destruye.
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    //3.- build envuelve la app con ThemeScope y reconstruye ante cambios de modo.
-    return ThemeScope(
-      controller: _controller,
-      child: AnimatedBuilder(
-        animation: _controller,
-        builder: (context, _) {
-          //4.- Define esquemas de color consistentes para modos claro y oscuro usando Material 3.
-          final colorScheme = ColorScheme.fromSeed(seedColor: Colors.blueGrey);
-          final darkColorScheme = ColorScheme.fromSeed(seedColor: Colors.blueGrey, brightness: Brightness.dark);
-          final shadTheme = ShadThemeBuilder.fromMaterial(
-            lightScheme: colorScheme,
-            darkScheme: darkColorScheme,
-            mode: _controller.mode,
-          );
-          return shad.Theme(
-            data: shadTheme,
-            child: MaterialApp(
-              title: 'Mictlan Client',
-              themeMode: _controller.mode,
-              theme: ThemeData(colorScheme: colorScheme, useMaterial3: true),
-              darkTheme: ThemeData(colorScheme: darkColorScheme, useMaterial3: true),
-              home: const AuthGate(),
-            ),
-          );
-        },
       ),
+      home: const DemoHomeScreen(),
     );
   }
 }
 
-//1.- AuthGate decide si mostrar el login o el flujo posterior a la autenticación.
-class AuthGate extends ConsumerWidget {
-  const AuthGate({super.key});
+//5.- Pantalla principal que presenta un resumen rápido de la demo.
+class DemoHomeScreen extends StatefulWidget {
+  const DemoHomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    //2.- build observa el estado del rider autenticado a través de Riverpod.
-    final rider = ref.watch(signedInRiderProvider);
-    if (rider == null) {
-      //3.- Sin sesión vigente devolvemos la pantalla de ingreso.
-      return const LoginScreen();
-    }
-    //4.- Con sesión activa presentamos la experiencia original.
-    return const HomeScreen();
-  }
+  State<DemoHomeScreen> createState() => _DemoHomeScreenState();
 }
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
+class _DemoHomeScreenState extends State<DemoHomeScreen> {
+  //6.- Controla el índice seleccionado para alternar los bloques de contenido.
+  int _selectedIndex = 0;
 
-class _HomeScreenState extends State<HomeScreen> {
-  int index = 0;
-
-  final pages = const [
-    DashboardScreen(),
-    MapReportScreen(),
-    ConsultScreen(),
+  //7.- Lista de mensajes que se muestran en el panel principal.
+  static const List<DemoHighlight> _highlights = <DemoHighlight>[
+    DemoHighlight(
+      title: 'Explora la experiencia',
+      description:
+          'La interfaz demuestra componentes Material 3 listos para producción '
+          'con colores configurables.',
+      icon: Icons.palette,
+    ),
+    DemoHighlight(
+      title: 'Prueba la interacción',
+      description:
+          'Interactúa con los controles inferiores para alternar las tarjetas '
+          'y observar las animaciones suaves.',
+      icon: Icons.touch_app,
+    ),
+    DemoHighlight(
+      title: 'Integra tus recursos',
+      description:
+          'La estructura está lista para conectar servicios o datos reales sin '
+          'perder la simplicidad de la demo.',
+      icon: Icons.extension,
+    ),
   ];
 
   @override
   Widget build(BuildContext context) {
-    //1.- build arma la estructura principal con AppBar, navegación y contenido dinámico.
+    final highlight = _highlights[_selectedIndex];
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Mictlan Client'),
+        //8.- Presenta un encabezado claro con acciones relevantes.
+        title: const Text('Panzerkraft Demo Ready'),
         actions: const [
           Padding(
-            padding: EdgeInsets.symmetric(horizontal: 12),
-            child: ThemeModeButton(),
+            padding: EdgeInsets.only(right: 16),
+            child: Icon(Icons.verified),
           ),
         ],
       ),
-      body: pages[index],
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isWide = constraints.maxWidth >= 720;
+          return AnimatedSwitcher(
+            duration: const Duration(milliseconds: 350),
+            child: isWide
+                ? _WideDemoLayout(highlight: highlight)
+                : _CompactDemoLayout(highlight: highlight),
+          );
+        },
+      ),
       bottomNavigationBar: NavigationBar(
-        selectedIndex: index,
-        onDestinationSelected: (i) => setState(() => index = i),
+        //9.- Barra de navegación para alternar entre los mensajes destacados.
+        selectedIndex: _selectedIndex,
+        onDestinationSelected: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
         destinations: const [
-          NavigationDestination(icon: Icon(Icons.dashboard_outlined), label: 'Dashboard'),
-          NavigationDestination(icon: Icon(Icons.map_outlined), label: 'Report'),
-          NavigationDestination(icon: Icon(Icons.search), label: 'Consult'),
+          NavigationDestination(
+            icon: Icon(Icons.palette_outlined),
+            selectedIcon: Icon(Icons.palette),
+            label: 'Diseño',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.touch_app_outlined),
+            selectedIcon: Icon(Icons.touch_app),
+            label: 'Interacción',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.extension_outlined),
+            selectedIcon: Icon(Icons.extension),
+            label: 'Integración',
+          ),
         ],
       ),
+    );
+  }
+}
+
+//10.- Modelo simple que encapsula cada mensaje destacado.
+class DemoHighlight {
+  const DemoHighlight({
+    required this.title,
+    required this.description,
+    required this.icon,
+  });
+
+  final String title;
+  final String description;
+  final IconData icon;
+}
+
+//11.- Disposición compacta para móviles.
+class _CompactDemoLayout extends StatelessWidget {
+  const _CompactDemoLayout({required this.highlight});
+
+  final DemoHighlight highlight;
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _DemoHeader(highlight: highlight),
+          const SizedBox(height: 24),
+          _DemoDetails(highlight: highlight),
+          const SizedBox(height: 24),
+          const _DemoFooter(),
+        ],
+      ),
+    );
+  }
+}
+
+//12.- Disposición amplia para pantallas grandes.
+class _WideDemoLayout extends StatelessWidget {
+  const _WideDemoLayout({required this.highlight});
+
+  final DemoHighlight highlight;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 32),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 2,
+            child: _DemoHeader(highlight: highlight),
+          ),
+          const SizedBox(width: 32),
+          Expanded(
+            flex: 3,
+            child: Column(
+              children: [
+                _DemoDetails(highlight: highlight),
+                const SizedBox(height: 32),
+                const _DemoFooter(),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+//13.- Tarjeta principal que sintetiza el mensaje.
+class _DemoHeader extends StatelessWidget {
+  const _DemoHeader({required this.highlight});
+
+  final DemoHighlight highlight;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Card(
+      elevation: 3,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(highlight.icon, size: 48, color: colorScheme.primary),
+            const SizedBox(height: 16),
+            Text(
+              highlight.title,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              highlight.description,
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+//14.- Detalles adicionales con chips ilustrativos.
+class _DemoDetails extends StatelessWidget {
+  const _DemoDetails({required this.highlight});
+
+  final DemoHighlight highlight;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Detalles rápidos',
+          style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: [
+            _InfoChip(
+              icon: Icons.color_lens,
+              label: 'Tema personalizable',
+              color: colorScheme.primary,
+            ),
+            _InfoChip(
+              icon: Icons.animation,
+              label: 'Animaciones suaves',
+              color: colorScheme.secondary,
+            ),
+            _InfoChip(
+              icon: Icons.smartphone,
+              label: 'Listo para Android',
+              color: colorScheme.tertiary,
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
+        Text(
+          'Descripción seleccionada',
+          style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          highlight.description,
+          style: textTheme.bodyMedium,
+        ),
+      ],
+    );
+  }
+}
+
+//15.- Pie con instrucciones para continuar la demo.
+class _DemoFooter extends StatelessWidget {
+  const _DemoFooter();
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceVariant,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: const [
+          Text(
+            'Siguiente paso',
+            style: TextStyle(fontWeight: FontWeight.w700),
+          ),
+          SizedBox(height: 8),
+          Text(
+            'Sustituye el contenido con tus vistas reales o conecta una API para '
+            'convertir esta demo en tu producto final.',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+//16.- Chip informativo reutilizable.
+class _InfoChip extends StatelessWidget {
+  const _InfoChip({
+    required this.icon,
+    required this.label,
+    required this.color,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Chip(
+      avatar: CircleAvatar(
+        backgroundColor: color.withOpacity(0.18),
+        child: Icon(icon, color: color),
+      ),
+      label: Text(label),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
     );
   }
 }

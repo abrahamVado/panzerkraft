@@ -1,5 +1,4 @@
-<!-- //1.- Recursos de texto compartidos por la app Android. -->
+<!-- //1.- Recursos de texto utilizados por la app de demostración. -->
 <resources>
-    <string name="app_name">Mictlan Client</string>
-    <string name="google_maps_key">AIzaSyAuofdV67KbI6st3PGuoQ4V1jw-MpzWTCA</string>
+    <string name="app_name">Panzerkraft Demo</string>
 </resources>

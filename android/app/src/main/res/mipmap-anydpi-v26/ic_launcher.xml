@@ -1,5 +1,5 @@
-<!-- //1.- Icono adaptive para Android O y superior. -->
+<!-- //1.- Ícono adaptive que utiliza un recurso de primer plano de ancho completo. -->
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
     <background android:drawable="@color/ic_launcher_background" />
-    <foreground android:drawable="@drawable/ic_launcher_foreground" />
+    <foreground android:drawable="@drawable/launcher_full_bleed" />
 </adaptive-icon>
