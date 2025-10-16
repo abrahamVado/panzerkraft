@@ -36,12 +36,23 @@ dev_dependencies:
   test: ^1.24.0
   # //7.- Activa las reglas de lint recomendadas para Flutter.
   flutter_lints: ^5.0.0
+  # //8.- Integra flutter_launcher_icons para generar los íconos nativos desde el recurso proporcionado.
+  flutter_launcher_icons: ^0.14.4
 
 flutter:
   uses-material-design: true
   assets:
     - assets/
-    # //8.- assets/icons contendrá los placeholders de íconos suministrados externamente.
+    # //9.- assets/icons contendrá los placeholders de íconos suministrados externamente.
     - assets/icons/
-    # //9.- internal/assets alberga los íconos personalizados enviados por el backend ciudadano.
+    # //10.- internal/assets alberga los íconos personalizados enviados por el backend ciudadano.
     - internal/assets/
+
+# //11.- Configuramos flutter_launcher_icons para reutilizar el recurso proporcionado sin versionar íconos generados.
+flutter_launcher_icons:
+  # //12.- Habilitamos la generación automática de íconos Android.
+  android: true
+  # //13.- Habilitamos la generación automática de íconos iOS.
+  ios: true
+  # //14.- Referenciamos el ícono entregado en android/assets/icon/app_icon.png sin crear artefactos sustitutos.
+  image_path: "android/assets/icon/app_icon.png"
