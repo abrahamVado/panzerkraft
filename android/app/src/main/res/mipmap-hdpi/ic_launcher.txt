@@ -1,0 +1,2 @@
+//1.- Place the hdpi launcher PNG named ic_launcher.png in this directory before building.
+//2.- This text placeholder exists because binaries cannot be committed to the repository.

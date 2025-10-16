@@ -1,0 +1,4 @@
+# //1.- Ignore binary launcher/support PNG assets that are generated locally.
+*.png
+# //2.- Track placeholder text instructions documenting required files.
+!*.txt

@@ -22,10 +22,10 @@
     <application
         android:label="Red TOSUR"
         android:name="${applicationName}"
-        <!-- //1.- Delegamos el icono del launcher al vector app_icon.xml para evitar manejar mipmap manualmente. -->
-        android:icon="@drawable/app_icon"
-        <!-- //2.- Reutilizamos el mismo recurso vectorial para el ícono redondo asegurando consistencia. -->
-        android:roundIcon="@drawable/app_icon"
+        <!-- //1.- Conectamos el launcher al PNG generado en mipmap; debe generarse a partir de los .txt antes de publicar. -->
+        android:icon="@mipmap/ic_launcher"
+        <!-- //2.- El ícono redondo reutiliza el arte generado con los mismos placeholders de texto. -->
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:usesCleartextTraffic="true"
         android:enableOnBackInvokedCallback="true"
         android:supportsRtl="true">
