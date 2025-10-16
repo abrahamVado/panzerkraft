@@ -6,8 +6,8 @@ import '../../../providers/dashboard/travel_history_controller.dart';
 import '../../../services/dashboard/dashboard_travel_history_service.dart';
 
 //1.1.- travelHistoryThumbnailAsset referencia el recurso configurable por defecto.
-const travelHistoryThumbnailAsset =
-    BrandingConfig.travelHistoryFallbackSource;
+final String travelHistoryThumbnailAsset =
+    BrandingConfig.resolvedTravelHistoryFallbackSource();
 
 //1.2.- travelHistoryVehicleThumbnails reutiliza la galería definida en BrandingConfig.
 final List<String> travelHistoryVehicleThumbnails =
@@ -43,11 +43,13 @@ class TravelHistoryThumbnailResolver {
   ) {
     final sanitized = <String>[];
     for (final asset in candidateAssets) {
-      final trimmed = asset.trim();
-      if (trimmed.isEmpty) {
+      final resolved = BrandingConfig.resolveMediaPath(asset);
+      if (resolved.isEmpty) {
         continue;
       }
-      sanitized.add(trimmed);
+      if (!sanitized.contains(resolved)) {
+        sanitized.add(resolved);
+      }
     }
     if (sanitized.isEmpty) {
       sanitized.add(_sanitizeFallback(fallbackAsset));
@@ -56,11 +58,11 @@ class TravelHistoryThumbnailResolver {
   }
 
   static String _sanitizeFallback(String? fallbackAsset) {
-    final trimmed = fallbackAsset?.trim();
-    if (trimmed == null || trimmed.isEmpty) {
+    final resolved = BrandingConfig.resolveMediaPath(fallbackAsset);
+    if (resolved.isEmpty) {
       return travelHistoryThumbnailAsset;
     }
-    return trimmed;
+    return resolved;
   }
 
   String assetForEntry(TravelHistoryEntry entry) {
