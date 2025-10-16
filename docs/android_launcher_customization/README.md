@@ -1,5 +1,12 @@
 # Red TOSUR Android Launcher Customization
 
+## Plan de tareas para corregir el ícono en Android
+1. Verificar que `assets/android/app_icon.png` exista en el repositorio local proporcionado por diseño.
+2. Confirmar que los recursos adaptativos `android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml` e `ic_launcher_round.xml` apunten al `@drawable/ic_launcher_foreground_bitmap` para mantener compatibilidad con el PNG.
+3. Ajustar el manifiesto principal (`android/app/src/main/AndroidManifest.xml`) si el atributo `android:icon` no referencia a `@mipmap/ic_launcher`.
+4. Ejecutar una compilación local (`flutter build apk`) para validar que el ícono actualizado se incluya en el paquete sin generar nuevos binarios en el repositorio.
+5. Probar el instalable resultante en un dispositivo o emulador verificando el ícono mostrado en el lanzador de Android y en el panel de aplicaciones recientes.
+
 ## Cambiar el nombre mostrado
 1. Abre `android/app/src/main/AndroidManifest.xml`.
 2. Verifica que el atributo `android:label` del nodo `<application>` contenga `Red TOSUR`.

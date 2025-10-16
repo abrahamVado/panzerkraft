@@ -9,7 +9,7 @@ class BrandingConfig {
   //3.- androidIconSource referencia el ícono cuadrado utilizado por el lanzador Android.
   static const String androidIconSource = String.fromEnvironment(
     'ANDROID_APP_ICON_SOURCE',
-    defaultValue: 'assets/android/app_icon.png',
+    defaultValue: 'assets/icon/app_icon.png',
   );
 
   //4.- travelHistoryFallbackSource establece la miniatura por defecto para viajes.

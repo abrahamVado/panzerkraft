@@ -1,5 +1,6 @@
 import java.io.File
 import java.util.Properties
+import org.gradle.api.GradleException
 
 plugins {
     //1.- Activa el plugin de aplicación Android siguiendo la configuración del proyecto de referencia.
@@ -124,3 +125,35 @@ fun registerFlutterApkCopyTask(buildType: String) {
 
 //13.- Registra la sincronización para los tipos de compilación soportados por Flutter.
 listOf("debug", "profile", "release").forEach(::registerFlutterApkCopyTask)
+
+//14.- launcherIconSource ubica el PNG suministrado manualmente dentro del árbol de assets.
+val launcherIconSource: File = rootProject.file("assets/icon/app_icon.png")
+
+//15.- launcherIconDensities define los directorios de mipmap que deben recibir el PNG.
+val launcherIconDensities = listOf("mipmap-mdpi", "mipmap-hdpi", "mipmap-xhdpi", "mipmap-xxhdpi", "mipmap-xxxhdpi")
+
+//16.- syncLauncherIcon replica el ícono en los recursos esperados antes de compilar.
+val syncLauncherIcon = tasks.register("syncLauncherIcon") {
+    //16.1.- Declaramos el archivo de entrada para habilitar la incrementalidad del task.
+    inputs.file(launcherIconSource)
+
+    //16.2.- Enumeramos los destinos para que Gradle detecte cambios en los recursos.
+    val outputsList = launcherIconDensities.map { density ->
+        File(projectDir, "src/main/res/$density/app_icon.png")
+    }
+    outputs.files(outputsList)
+
+    //16.3.- Copiamos el PNG o detenemos la compilación si el recurso no fue proporcionado.
+    doLast {
+        if (!launcherIconSource.exists()) {
+            throw GradleException("Falta assets/icon/app_icon.png; agrega el PNG antes de compilar.")
+        }
+        outputsList.forEach { target ->
+            target.parentFile.mkdirs()
+            launcherIconSource.copyTo(target, overwrite = true)
+        }
+    }
+}
+
+//17.- Hacemos que la etapa de preBuild exija la sincronización del ícono.
+tasks.named("preBuild").configure { dependsOn(syncLauncherIcon) }
