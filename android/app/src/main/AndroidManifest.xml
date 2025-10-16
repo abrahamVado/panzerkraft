@@ -1,16 +1,13 @@
-<!-- //1.- Manifest principal que declara permisos, activity y metadata de la app Flutter. -->
+<!-- //1.- Manifest básico con la configuración mínima para ejecutar Flutter en Android. -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.mictlan_client">
+    package="com.panzerkraft.demo">
 
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <!-- //2.- Habilita el callback moderno de regreso para evitar advertencias en Android 13+. -->
     <application
-        android:label="mictlan_client"
+        android:label="Panzerkraft Demo"
         android:name="${applicationName}"
-        android:icon="@drawable/ic_launcher"
-        android:roundIcon="@drawable/ic_launcher_round"
-        android:usesCleartextTraffic="true"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="false"
         android:enableOnBackInvokedCallback="true">
         <activity
             android:name=".MainActivity"
@@ -26,7 +23,6 @@
             </intent-filter>
         </activity>
 
-        <meta-data android:name="com.google.android.geo.API_KEY" android:value="${MAPS_API_KEY}" />
         <meta-data android:name="flutterEmbedding" android:value="2" />
     </application>
 </manifest>

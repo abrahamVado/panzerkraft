@@ -1,10 +1,13 @@
-<!-- //1.- Icono vectorial simple para el launcher de la app. -->
+<!-- //1.- Placeholder vector que ocupa el 100% del lienzo para el ícono launcher. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
     <path
+        android:fillColor="#121212"
+        android:pathData="M0,0h108v108H0z" />
+    <path
         android:fillColor="#FFFFFF"
-        android:pathData="M54,18a36,36 0 1,0 0,72a36,36 0 1,0 0,-72zm0,12a24,24 0 1,1 0,48a24,24 0 1,1 0,-48z" />
+        android:pathData="M12,12h84v84h-84z" />
 </vector>

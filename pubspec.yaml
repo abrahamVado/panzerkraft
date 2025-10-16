@@ -1,45 +1,25 @@
-name: mictlan_client
-description: Client prototype for reporting and consulting incidents against the Mictlan Go backend.
+name: panzerkraft_demo
+//1.- Descripción concisa orientada a la demo solicitada.
+description: Demo de Flutter lista para Android con una pantalla de muestra.
 publish_to: "none"
 version: 0.1.0+1
 
 environment:
-  # //1.- Ajustamos el SDK mínimo a la versión compatible con el proyecto de referencia.
+  //2.- Define la versión mínima del SDK de Dart/Flutter compatible con la plantilla.
   sdk: "^3.9.2"
 
 dependencies:
   flutter:
     sdk: flutter
-  # //2.- Sincroniza las dependencias base con la aplicación de referencia para asegurar compatibilidad.
+  //3.- Incluye íconos de Cupertino para paridad visual en iOS y Android.
   cupertino_icons: ^1.0.8
-  # //3.- Agrega Riverpod para la gestión de estado igual que en la app ciudadana.
-  flutter_riverpod: ^2.5.1
-  # //4.- Añade Dio para peticiones HTTP avanzadas utilizadas por la app de referencia.
-  dio: ^5.7.0
-  # //5.- Incluye Equatable para simplificar comparaciones de modelos.
-  equatable: ^2.0.5
-  google_maps_flutter: ^2.7.0
-  geolocator: ^13.0.1
-  http: ^1.2.2
-  device_info_plus: ^10.1.0
-  flutter_secure_storage: ^9.2.2
-  uuid: ^4.5.1
-  # //6.- Habilita el sistema de diseño shadcn para alinear tarjetas y botones personalizados.
-  shadcn_flutter: ^0.0.44
-  crypto: ^3.0.3
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  test: ^1.24.0
-  # //7.- Activa las reglas de lint recomendadas para Flutter.
+  //4.- Mantiene reglas de lint recomendadas para código limpio en la demo.
   flutter_lints: ^5.0.0
 
 flutter:
+  //5.- Activa el conjunto de íconos de Material para los widgets usados en la demo.
   uses-material-design: true
-  assets:
-    - assets/
-    # //8.- assets/icons contendrá los placeholders de íconos suministrados externamente.
-    - assets/icons/
-    # //9.- internal/assets alberga los íconos personalizados enviados por el backend ciudadano.
-    - internal/assets/
