@@ -1,0 +1,2 @@
+//1.- Place the xxxhdpi round launcher PNG named ic_launcher_round.png in this directory before building.
+//2.- This placeholder prevents committing binary assets to the repository.

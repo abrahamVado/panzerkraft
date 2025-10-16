@@ -1,0 +1,2 @@
+//1.- Genera ic_launcher_round.png en este directorio cuando prepares binarios para dispositivos legacy.
+//2.- Controlamos el repositorio sin binarios y documentamos el recurso requerido con este texto.

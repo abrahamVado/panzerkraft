@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- //1.- Define el icono adaptativo reutilizando el recurso generado a partir de los placeholders de texto. -->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- //2.- Fondo sólido coherente con la paleta de la app. -->
+    <background android:drawable="@color/ic_launcher_background" />
+    <!-- //3.- Primer plano basado en el vector temporal hasta que se generen los PNG definitivos. -->
+    <foreground android:drawable="@drawable/ic_launcher_foreground_bitmap" />
+</adaptive-icon>
