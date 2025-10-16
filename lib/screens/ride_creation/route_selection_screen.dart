@@ -19,7 +19,6 @@ const routeSelectionDestinationFieldKey = Key(
 const routeSelectionStartButtonKey = Key('route_selection_start_button');
 const routeSelectionMapKey = Key('route_selection_map');
 const routeSelectionCalculateButtonKey = Key('route_selection_calculate_button');
-const routeSelectionUseDemoButtonKey = Key('route_selection_use_demo_button');
 
 //3.1.- _ActiveRouteField identifica el campo actualmente interactivo para rellenar con el mapa.
 enum _ActiveRouteField { origin, destination }
@@ -177,16 +176,8 @@ class _RouteSelectionScreenState extends ConsumerState<RouteSelectionScreen> {
     await ref.read(routeSelectionControllerProvider.notifier).calculateRoutes();
   }
 
-  Future<void> _useDemoRoute() async {
-    //9.3.- _useDemoRoute aplica el ejemplo público del Directions API para rellenar ambos campos.
-    FocusScope.of(context).unfocus();
-    await ref
-        .read(routeSelectionControllerProvider.notifier)
-        .useHistoricCenterToTeotihuacanDemoRoute();
-  }
-
   Future<void> _resolveLocationAndCalculate() async {
-    //9.4.- _resolveLocationAndCalculate obtiene la ubicación actual antes de lanzar el cálculo.
+    //9.3.- _resolveLocationAndCalculate obtiene la ubicación actual antes de lanzar el cálculo.
     if (_isResolvingLocation) {
       return;
     }
@@ -447,18 +438,6 @@ class _RouteSelectionScreenState extends ConsumerState<RouteSelectionScreen> {
                 Text(
                   'Consejo: toca el mapa mientras el campo deseado esté enfocado para rellenarlo automáticamente.',
                   style: theme.textTheme.bodySmall,
-                ),
-                const SizedBox(height: 12),
-                //15.1.- Ofrecemos un botón que carga el ejemplo con coordenadas reales.
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: TextButton.icon(
-                    key: routeSelectionUseDemoButtonKey,
-                    onPressed:
-                        state.isLoadingRoutes ? null : () => _useDemoRoute(),
-                    icon: const Icon(Icons.map_outlined),
-                    label: const Text('Use Mexico City → Teotihuacán example'),
-                  ),
                 ),
                 const SizedBox(height: 16),
                 Expanded(

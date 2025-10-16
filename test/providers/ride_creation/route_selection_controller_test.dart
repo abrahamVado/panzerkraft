@@ -131,43 +131,35 @@ void main() {
       expect(controller.state.selectedRoute, fastRoute);
     });
 
-    //7.- useHistoricCenterToTeotihuacanDemoRoute carga el ejemplo público y dispara el cálculo automático.
-    test('demo route populates preset waypoints and fetches directions', () async {
-      final demoRoute = const RideRouteOption(
-        id: 'demo-route',
+    //7.- Cuando ambos puntos están definidos la ruta se calcula automáticamente.
+    test('auto refresh routes once origin and destination exist', () async {
+      final autoRoute = const RideRouteOption(
+        id: 'auto',
         polyline: 'xyz',
-        distanceMeters: 50000,
-        durationSeconds: 3600,
-        summary: 'Mexico 132D',
+        distanceMeters: 4200,
+        durationSeconds: 1800,
+        summary: 'Direct path',
       );
-      final directions = _FakeDirectionsService(routesToReturn: [demoRoute]);
+      final directions = _FakeDirectionsService(routesToReturn: [autoRoute]);
       final controller = RouteSelectionController(
         places: _FakePlaceAutocompleteService(),
         directions: directions,
       );
 
-      await controller.useHistoricCenterToTeotihuacanDemoRoute();
+      const origin = LatLng(48.8566, 2.3522);
+      const destination = LatLng(51.5074, -0.1278);
 
-      expect(
-        controller.state.origin?.placeId,
-        'demo_origin_mexico_city_centro',
-      );
-      expect(
-        controller.state.destination?.placeId,
-        'demo_destination_teotihuacan_site',
-      );
-      expect(controller.state.routes, [demoRoute]);
-      expect(controller.state.selectedRoute, demoRoute);
+      await controller.selectOriginFromMap(origin);
+      expect(controller.state.routes, isEmpty);
+
+      await controller.selectDestinationFromMap(destination);
+
+      expect(directions.lastOrigin, origin);
+      expect(directions.lastDestination, destination);
+      expect(controller.state.routes, [autoRoute]);
+      expect(controller.state.selectedRoute, autoRoute);
       expect(controller.state.isLoadingRoutes, isFalse);
       expect(controller.state.errorMessage, isNull);
-      expect(
-        directions.lastOrigin,
-        const LatLng(19.4326, -99.1332),
-      );
-      expect(
-        directions.lastDestination,
-        const LatLng(19.7008, -98.8456),
-      );
     });
   });
 }
