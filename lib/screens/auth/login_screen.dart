@@ -165,38 +165,36 @@ class _BrandingImageTile extends StatelessWidget {
     final theme = Theme.of(context);
     final borderColor = theme.colorScheme.outlineVariant;
     final textStyle = theme.textTheme.labelMedium;
+    final borderRadius = BorderRadius.circular(12);
     final imageWidget = BrandingConfig.isRemoteSource(source)
         ? Image.network(
             source,
-            height: height,
-            fit: BoxFit.contain,
-            errorBuilder: (context, error, stackTrace) => _BrandingImagePlaceholder(label: label),
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) =>
+                _BrandingImagePlaceholder(label: label),
           )
         : Image.asset(
             source,
-            height: height,
-            fit: BoxFit.contain,
-            errorBuilder: (context, error, stackTrace) => _BrandingImagePlaceholder(label: label),
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) =>
+                _BrandingImagePlaceholder(label: label),
           );
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             border: Border.all(color: borderColor),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: borderRadius,
           ),
+          clipBehavior: Clip.hardEdge,
           child: Semantics(
             label: label,
             image: true,
             child: SizedBox(
               height: height,
               width: height,
-              child: FittedBox(
-                fit: BoxFit.contain,
-                child: imageWidget,
-              ),
+              child: imageWidget,
             ),
           ),
         ),
