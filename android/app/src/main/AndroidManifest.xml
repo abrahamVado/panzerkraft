@@ -1,23 +1,33 @@
-<!-- //1.- Manifest principal que declara permisos, activity y metadata de la app Flutter. -->
+<!-- android/app/src/main/AndroidManifest.xml -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.ubberapp">
 
+    <!-- Permisos mínimos -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <!-- //2.- Habilita el callback moderno de regreso para evitar advertencias en Android 13+. -->
-    <!-- //3.- La etiqueta application agrupa configuraciones globales para la app Flutter. -->
+
+    <!-- Opcionales según caso de uso -->
+    <!-- Requerido si harás tracking en background (Android 10+). Pide consentimiento explícito. -->
+    <!-- <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" /> -->
+    <!-- Requeridos si usarás un Foreground Service para ubicación continua. -->
+    <!-- <uses-permission android:name="android.permission.FOREGROUND_SERVICE" /> -->
+    <!-- <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" /> -->
+    <!-- Notificaciones (Android 13+) si mostrarás notificación del service -->
+    <!-- <uses-permission android:name="android.permission.POST_NOTIFICATIONS" /> -->
+
+    <!-- No obligues GPS; deja la app instalable sin él -->
+    <uses-feature android:name="android.hardware.location.gps" android:required="false" />
+
     <application
         android:label="Red TOSUR"
-        <!-- //4.- Vincula la clase generada por Flutter que inicializa la aplicación. -->
         android:name="${applicationName}"
-        <!-- //5.- Asigna los íconos principales utilizados por Android. -->
-        android:icon="@drawable/ic_launcher"
-        android:roundIcon="@drawable/ic_launcher_round"
-        <!-- //6.- Permite tráfico sin cifrar cuando es necesario. -->
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:usesCleartextTraffic="true"
-        <!-- //7.- Activa el nuevo callback de botón atrás disponible desde Android 13. -->
-        android:enableOnBackInvokedCallback="true">
-        <!-- //8.- MainActivity hospeda la vista Flutter y configura los filtros de intent. -->
+        android:enableOnBackInvokedCallback="true"
+        android:supportsRtl="true">
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -32,7 +42,13 @@
             </intent-filter>
         </activity>
 
-        <meta-data android:name="com.google.android.geo.API_KEY" android:value="${MAPS_API_KEY}" />
-        <meta-data android:name="flutterEmbedding" android:value="2" />
+        <!-- Google Maps API Key: define MAPS_API_KEY en gradle.properties -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="${MAPS_API_KEY}" />
+
+        <meta-data
+            android:name="flutterEmbedding"
+            android:value="2" />
     </application>
 </manifest>
