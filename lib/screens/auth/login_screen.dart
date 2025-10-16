@@ -213,6 +213,7 @@ class _BrandingImagePlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    //1.- build asegura que el placeholder se adapte incluso en contenedores compactos.
     final theme = Theme.of(context);
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -220,20 +221,49 @@ class _BrandingImagePlaceholder extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.photo_outlined, color: theme.colorScheme.onSurfaceVariant),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: theme.textTheme.bodySmall,
-              textAlign: TextAlign.center,
-            ),
-          ],
+        padding: const EdgeInsets.all(8),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            //2.- Calculamos dinámicamente el tamaño del ícono para ajustarlo al recuadro.
+            final shortestSide = constraints.biggest.shortestSide;
+            final iconSize = shortestSide.isFinite
+                ? (shortestSide * 0.45).clamp(20.0, 36.0).toDouble()
+                : 28.0;
+            return FittedBox(
+              fit: BoxFit.scaleDown,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 120),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.photo_outlined,
+                      color: theme.colorScheme.onSurfaceVariant,
+                      size: iconSize,
+                    ),
+                    const SizedBox(height: 4),
+                    SizedBox(
+                      width: 96,
+                      child: Text(
+                        label,
+                        style: theme.textTheme.bodySmall,
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
   }
+}
+
+//1.4.- createBrandingPlaceholderForTesting expone el widget interno a las pruebas.
+Widget createBrandingPlaceholderForTesting(String label) {
+  return _BrandingImagePlaceholder(label: label);
 }
