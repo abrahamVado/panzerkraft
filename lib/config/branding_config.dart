@@ -18,7 +18,13 @@ class BrandingConfig {
     defaultValue: 'assets/images/travel_history/default_thumbnail.png',
   );
 
-  //5.- _travelHistoryVehicleGallery enumera imágenes cíclicas para el historial.
+  //5.- mediaBaseUrl permite apuntar a archivos alojados en Drupal u orígenes remotos.
+  static const String mediaBaseUrl = String.fromEnvironment(
+    'BRANDING_MEDIA_BASE_URL',
+    defaultValue: '',
+  );
+
+  //6.- _travelHistoryVehicleGallery enumera imágenes cíclicas para el historial.
   static const List<String> _travelHistoryVehicleGallery = [
     String.fromEnvironment(
       'TRAVEL_HISTORY_IMAGE_1',
@@ -46,25 +52,55 @@ class BrandingConfig {
     ),
   ];
 
-  //6.- travelHistoryVehicleGallery filtra elementos vacíos y evita duplicados triviales.
+  //7.- resolveMediaPath ajusta rutas relativas usando el dominio configurado.
+  static String resolveMediaPath(String? value) {
+    final trimmed = value?.trim() ?? '';
+    if (trimmed.isEmpty) {
+      return '';
+    }
+    if (isRemoteSource(trimmed)) {
+      return trimmed;
+    }
+    if (trimmed.startsWith('//')) {
+      return 'https:$trimmed';
+    }
+    final base = mediaBaseUrl.trim();
+    if (trimmed.startsWith('/')) {
+      if (base.isEmpty) {
+        return '';
+      }
+      final normalizedBase = base.endsWith('/') ? base : '$base/';
+      final normalizedPath = trimmed.replaceFirst(RegExp(r'^/+'), '');
+      return '$normalizedBase$normalizedPath';
+    }
+    return trimmed;
+  }
+
+  //8.- resolvedTravelHistoryFallbackSource entrega la miniatura lista para usarse.
+  static String resolvedTravelHistoryFallbackSource() {
+    final resolved = resolveMediaPath(travelHistoryFallbackSource);
+    return resolved.isEmpty ? travelHistoryFallbackSource : resolved;
+  }
+
+  //9.- travelHistoryVehicleGallery filtra elementos vacíos y evita duplicados triviales.
   static List<String> travelHistoryVehicleGallery() {
     final sanitized = <String>[];
     for (final asset in _travelHistoryVehicleGallery) {
-      final trimmed = asset.trim();
-      if (trimmed.isEmpty) {
+      final resolved = resolveMediaPath(asset);
+      if (resolved.isEmpty) {
         continue;
       }
-      if (!sanitized.contains(trimmed)) {
-        sanitized.add(trimmed);
+      if (!sanitized.contains(resolved)) {
+        sanitized.add(resolved);
       }
     }
     if (sanitized.isEmpty) {
-      sanitized.add(travelHistoryFallbackSource);
+      sanitized.add(resolvedTravelHistoryFallbackSource());
     }
     return List.unmodifiable(sanitized);
   }
 
-  //7.- isRemoteSource identifica rutas absolutas que deben cargarse vía red.
+  //10.- isRemoteSource identifica rutas absolutas que deben cargarse vía red.
   static bool isRemoteSource(String value) {
     final normalized = value.trim().toLowerCase();
     return normalized.startsWith('http://') ||
