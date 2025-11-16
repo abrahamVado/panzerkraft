@@ -63,4 +63,7 @@ Thumbs.db
 # Logs
 *.log
 
+# Node.js artifacts
+node_modules/
+
 # NOTE: Keep pubspec.lock for apps (do not ignore).
