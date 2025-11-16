@@ -1,2 +1,0 @@
-//1.- Genera ic_launcher.png dentro de este directorio si necesitas un drawable no adaptativo.
-//2.- Este archivo documenta la ausencia intencional de binarios en control de versiones.

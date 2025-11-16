@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- //1.- Mantiene consistencia del icono adaptativo redondo con los recursos generados a partir de los .txt. -->
-<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- //2.- Fondo que iguala el color base del branding. -->
-    <background android:drawable="@color/ic_launcher_background" />
-    <!-- //3.- Usa el vector temporal como primer plano hasta que existan los PNG definitivos. -->
-    <foreground android:drawable="@drawable/ic_launcher_foreground_bitmap" />
-</adaptive-icon>

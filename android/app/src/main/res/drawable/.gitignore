@@ -1,4 +1,0 @@
-# //1.- Evitamos versionar PNGs de launcher generados localmente.
-*.png
-# //2.- Permitimos rastrear archivos de texto con instrucciones.
-!*.txt

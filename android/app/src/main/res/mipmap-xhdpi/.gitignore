@@ -1,5 +1,0 @@
-# //1.- Ignora recursos generados temporalmente para evitar ruido en commits.
-*.png
-# //2.- Permitimos versionar los PNG oficiales del launcher para las builds.
-!ic_launcher.txt
-!ic_launcher_round.txt

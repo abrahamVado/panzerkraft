@@ -1,2 +1,0 @@
-//1.- Place pothole.png in this directory when packaging the application.
-//2.- Binary icons are excluded from source control, so this text file documents the expected asset.
